@@ -43,7 +43,6 @@ const i18n = {
     clear: 'クリア',
     yourAnswer: 'あなたの回答',
     inputPlaceholder: '数字をタップ →（単位ボタンで確定）',
-    toResult: '結果へ',
     testFailNote: '昇格テストは1問でも不正解で終了です',
     sections: {
       number: 'ただの数字編',
@@ -104,7 +103,6 @@ const i18n = {
     clear: 'Clear',
     yourAnswer: 'Your answer',
     inputPlaceholder: 'Tap digits → a unit to submit',
-    toResult: 'See result',
     testFailNote: 'One wrong answer ends the promotion test',
     sections: {
       number: 'Numbers',
@@ -479,11 +477,6 @@ export default function App() {
   // ── Next question ─────────────────────────────────────────────────────────
   const handleNext = useCallback(() => {
     setFlash(null)
-    // 昇格テストは1問でも不正解（時間切れ含む）で即終了
-    if (gameConfig?.mode === 'test' && reveal?.correct !== true) {
-      setScreen('result')
-      return
-    }
     const nextIdx = qIndex + 1
     if (nextIdx >= QUESTIONS_PER_SESSION) {
       setScreen('result')
@@ -495,20 +488,20 @@ export default function App() {
     setInputUnit('')
     setReveal(null)
     startTimer(LEVEL_TIMES[gameConfig.level])
-  }, [qIndex, gameConfig, reveal, startTimer])
+  }, [qIndex, gameConfig, startTimer])
 
-  // ── Save session result ───────────────────────────────────────────────────
-  useEffect(() => {
-    if (screen !== 'result' || !gameConfig || sessionResultSaved.current) return
+  // ── セッション結果を保存（履歴・解放状況の更新） ──────────────────────────────
+  const saveResult = useCallback((scores, config) => {
+    if (sessionResultSaved.current || !config) return
     sessionResultSaved.current = true
 
-    const totalCorrect = sessionScores.filter(Boolean).length
-    const passed = gameConfig.mode === 'test' && totalCorrect === QUESTIONS_PER_SESSION
+    const totalCorrect = scores.filter(Boolean).length
+    const passed = config.mode === 'test' && totalCorrect === QUESTIONS_PER_SESSION
     const newScore = {
       date: new Date().toISOString(),
-      section: gameConfig.section,
-      level: gameConfig.level,
-      mode: gameConfig.mode,
+      section: config.section,
+      level: config.level,
+      mode: config.mode,
       score: totalCorrect,
       total: QUESTIONS_PER_SESSION,
       passed,
@@ -523,13 +516,13 @@ export default function App() {
       }
 
       if (passed) {
-        const key = `${gameConfig.section}-${gameConfig.level}`
+        const key = `${config.section}-${config.level}`
         updated.clearedLevels[key] = true
 
-        // Unlock next section when Lv.3 is cleared
-        if (gameConfig.level === 3) {
+        // Lv.3 クリアで次の編を解放
+        if (config.level === 3) {
           const nextSecMap = { number: 'add', add: 'sub', sub: 'mul', mul: 'div' }
-          const nextSec = nextSecMap[gameConfig.section]
+          const nextSec = nextSecMap[config.section]
           if (nextSec && !updated.unlockedSections.includes(nextSec)) {
             updated.unlockedSections.push(nextSec)
           }
@@ -542,8 +535,25 @@ export default function App() {
       saveProgress(updated)
       return updated
     })
+  }, [])
+
+  // 結果画面（練習・テスト合格）に入ったら保存
+  useEffect(() => {
+    if (screen === 'result') saveResult(sessionScores, gameConfig)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [screen])
+
+  // 昇格テストで不正解 → 結果画面を挟まず即やり直し / ホームへ
+  const failTestRetry = useCallback(() => {
+    saveResult(sessionScores, gameConfig)
+    startGame(gameConfig)
+  }, [saveResult, sessionScores, gameConfig, startGame])
+
+  const failTestHome = useCallback(() => {
+    saveResult(sessionScores, gameConfig)
+    clearTimer()
+    setScreen('home')
+  }, [saveResult, sessionScores, gameConfig, clearTimer])
 
   // ── Flash clear ───────────────────────────────────────────────────────────
   useEffect(() => {
@@ -600,7 +610,7 @@ export default function App() {
             inputNum={inputNum} inputUnit={inputUnit}
             onDigit={handleDigit} onUnit={handleUnit}
             onDelete={handleDelete} onClear={handleClear}
-            onNext={handleNext}
+            onNext={handleNext} onFailRetry={failTestRetry} onFailHome={failTestHome}
             section={gameConfig.section} mode={gameConfig.mode} sessionScores={sessionScores}
           />
         )}
@@ -811,7 +821,8 @@ function TestScreen({ t, progress, isUnlocked, isLevelUnlocked, startGame }) {
 
 // ── GameScreen ────────────────────────────────────────────────────────────────
 function GameScreen({ t, lang, q, qIndex, timeLeft, totalTime, phase, reveal,
-  inputNum, inputUnit, onDigit, onUnit, onDelete, onClear, onNext, section, mode, sessionScores }) {
+  inputNum, inputUnit, onDigit, onUnit, onDelete, onClear, onNext, onFailRetry, onFailHome, section, mode, sessionScores }) {
+  const testFailed = mode === 'test' && reveal && reveal.correct !== true
   const isArith = section !== 'number'
   const correctLabel = labelFromValue(q.approx.value, lang).label
   const displayNumber = section === 'number'
@@ -949,17 +960,25 @@ function GameScreen({ t, lang, q, qIndex, timeLeft, totalTime, phase, reveal,
             </div>
           )}
 
-          {/* 昇格テストで不正解 → そのまま終了 */}
-          {mode === 'test' && !isCorrect && (
-            <div className="text-center text-xs text-red-300/80">{t.testFailNote}</div>
+          {testFailed ? (
+            <>
+              {/* 昇格テストは1問でも不正解で終了 → その場でやり直し / ホームへ */}
+              <div className="text-center text-sm text-red-300 font-bold">{t.testFailNote}</div>
+              <button onClick={onFailRetry}
+                className="w-full bg-yellow-400 text-slate-900 font-black text-lg py-4 rounded-2xl active:scale-95 transition cursor-pointer">
+                {t.retry}
+              </button>
+              <button onClick={onFailHome}
+                className="w-full bg-slate-700 text-slate-300 font-bold py-3 rounded-2xl active:scale-95 transition cursor-pointer">
+                {t.home}
+              </button>
+            </>
+          ) : (
+            <button onClick={onNext}
+              className="w-full bg-yellow-400 text-slate-900 font-black text-lg py-4 rounded-2xl active:scale-95 transition cursor-pointer">
+              {qIndex + 1 < QUESTIONS_PER_SESSION ? t.next : `${t.score} →`}
+            </button>
           )}
-
-          <button onClick={onNext}
-            className="w-full bg-yellow-400 text-slate-900 font-black text-lg py-4 rounded-2xl active:scale-95 transition cursor-pointer">
-            {mode === 'test' && !isCorrect
-              ? `${t.toResult} →`
-              : qIndex + 1 < QUESTIONS_PER_SESSION ? t.next : `${t.score} →`}
-          </button>
         </div>
       )}
     </div>
