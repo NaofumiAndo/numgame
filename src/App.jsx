@@ -43,6 +43,8 @@ const i18n = {
     clear: 'クリア',
     yourAnswer: 'あなたの回答',
     inputPlaceholder: '数字をタップ →（単位ボタンで確定）',
+    toResult: '結果へ',
+    testFailNote: '昇格テストは1問でも不正解で終了です',
     sections: {
       number: 'ただの数字編',
       add: '足し算編',
@@ -102,6 +104,8 @@ const i18n = {
     clear: 'Clear',
     yourAnswer: 'Your answer',
     inputPlaceholder: 'Tap digits → a unit to submit',
+    toResult: 'See result',
+    testFailNote: 'One wrong answer ends the promotion test',
     sections: {
       number: 'Numbers',
       add: 'Addition',
@@ -475,6 +479,11 @@ export default function App() {
   // ── Next question ─────────────────────────────────────────────────────────
   const handleNext = useCallback(() => {
     setFlash(null)
+    // 昇格テストは1問でも不正解（時間切れ含む）で即終了
+    if (gameConfig?.mode === 'test' && reveal?.correct !== true) {
+      setScreen('result')
+      return
+    }
     const nextIdx = qIndex + 1
     if (nextIdx >= QUESTIONS_PER_SESSION) {
       setScreen('result')
@@ -486,7 +495,7 @@ export default function App() {
     setInputUnit('')
     setReveal(null)
     startTimer(LEVEL_TIMES[gameConfig.level])
-  }, [qIndex, gameConfig, startTimer])
+  }, [qIndex, gameConfig, reveal, startTimer])
 
   // ── Save session result ───────────────────────────────────────────────────
   useEffect(() => {
@@ -592,7 +601,7 @@ export default function App() {
             onDigit={handleDigit} onUnit={handleUnit}
             onDelete={handleDelete} onClear={handleClear}
             onNext={handleNext}
-            section={gameConfig.section} sessionScores={sessionScores}
+            section={gameConfig.section} mode={gameConfig.mode} sessionScores={sessionScores}
           />
         )}
         {screen === 'result' && gameConfig && (
@@ -802,7 +811,7 @@ function TestScreen({ t, progress, isUnlocked, isLevelUnlocked, startGame }) {
 
 // ── GameScreen ────────────────────────────────────────────────────────────────
 function GameScreen({ t, lang, q, qIndex, timeLeft, totalTime, phase, reveal,
-  inputNum, inputUnit, onDigit, onUnit, onDelete, onClear, onNext, section, sessionScores }) {
+  inputNum, inputUnit, onDigit, onUnit, onDelete, onClear, onNext, section, mode, sessionScores }) {
   const isArith = section !== 'number'
   const correctLabel = labelFromValue(q.approx.value, lang).label
   const displayNumber = section === 'number'
@@ -940,9 +949,16 @@ function GameScreen({ t, lang, q, qIndex, timeLeft, totalTime, phase, reveal,
             </div>
           )}
 
+          {/* 昇格テストで不正解 → そのまま終了 */}
+          {mode === 'test' && !isCorrect && (
+            <div className="text-center text-xs text-red-300/80">{t.testFailNote}</div>
+          )}
+
           <button onClick={onNext}
             className="w-full bg-yellow-400 text-slate-900 font-black text-lg py-4 rounded-2xl active:scale-95 transition cursor-pointer">
-            {qIndex + 1 < QUESTIONS_PER_SESSION ? t.next : `${t.score} →`}
+            {mode === 'test' && !isCorrect
+              ? `${t.toResult} →`
+              : qIndex + 1 < QUESTIONS_PER_SESSION ? t.next : `${t.score} →`}
           </button>
         </div>
       )}
