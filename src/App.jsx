@@ -45,14 +45,14 @@ const i18n = {
     inputPlaceholder: '数字をタップ →（単位ボタンで確定）',
     testFailNote: '昇格テストは1問でも不正解で終了です',
     sections: {
-      number: 'ただの数字編',
+      number: '数字読み編',
       add: '足し算編',
       sub: '引き算編',
       mul: '掛け算編',
       div: '割り算編',
     },
     unlockHint: {
-      add: 'ただの数字編 Lv.3 クリアで解放',
+      add: '数字読み編 Lv.3 クリアで解放',
       sub: '足し算編 Lv.3 クリアで解放',
       mul: '引き算編 Lv.3 クリアで解放',
       div: '掛け算編 Lv.3 クリアで解放',
@@ -163,7 +163,7 @@ function generateBaseNumber() {
   return randInt(1, 999) * CHOU
 }
 
-// ただの数字編・後半（6問目以降）用：「大きな数字 + 単位（兆以外）」の問題
+// 数字読み編・後半（6問目以降）用：「大きな数字 + 単位（兆以外）」の問題
 // 例: 45,550 万 → 値 455,500,000 → 答え 5億。答えは必ず 9000兆 未満になる。
 function generateUnitNumberQuestion() {
   const digitsCount = randInt(5, 7)
@@ -578,7 +578,9 @@ export default function App() {
               ←
             </button>
           )}
-          <span className="text-yellow-400 font-black text-base">{t.title}</span>
+          {screen !== 'home' && (
+            <span className="text-yellow-400 font-black text-base">{t.title}</span>
+          )}
         </div>
         <button
           onClick={() => setLang(l => l === 'ja' ? 'en' : 'ja')}
