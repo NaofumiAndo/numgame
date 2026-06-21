@@ -37,6 +37,12 @@ const i18n = {
     noHistory: '履歴がありません',
     calculation: '計算過程',
     answer: '正解',
+    roundRule: '一番大きな位で四捨五入！',
+    roundHint: '例: 5,998,981 → 600万 ／ 51,600,000,000 → 500億',
+    submit: '決定',
+    clear: 'クリア',
+    yourAnswer: 'あなたの回答',
+    inputPlaceholder: '数字 → 単位の順にタップ',
     sections: {
       number: 'ただの数字編',
       add: '足し算編',
@@ -90,6 +96,12 @@ const i18n = {
     noHistory: 'No history yet',
     calculation: 'Calculation',
     answer: 'Answer',
+    roundRule: 'Round at the highest digit!',
+    roundHint: 'e.g. 5,998,981 → 600万 / 51,600,000,000 → 500億',
+    submit: 'Enter',
+    clear: 'Clear',
+    yourAnswer: 'Your answer',
+    inputPlaceholder: 'Tap digits, then a unit',
     sections: {
       number: 'Numbers',
       add: 'Addition',
@@ -186,83 +198,42 @@ function fmt(n) {
   return n.toLocaleString('ja-JP')
 }
 
-// ── Rounding to 概数 ──────────────────────────────────────────────────────────
-function toApprox(n) {
-  if (n <= 0) return { value: 0, label: '0', labelEn: '0', unit: null, coeff: 0 }
-
-  const tiers = [
-    { base: CHOU, unit: '兆', unitEn: 'tril' },
-    { base: OKU, unit: '億', unitEn: '100M' },
-    { base: MAN, unit: '万', unitEn: '10K' },
-  ]
-
-  for (const { base, unit, unitEn } of tiers) {
-    if (n >= base) {
-      const raw = n / base
-      const mag = Math.pow(10, Math.floor(Math.log10(raw)))
-      // Japanese 四捨五入: add tiny epsilon before rounding to handle .5 correctly
-      const rounded = Math.round(raw / mag + 1e-10) * mag
-      const coeff = rounded
-      return { value: rounded * base, label: `${coeff}${unit}`, labelEn: `${coeff}${unitEn}`, unit, unitEn, coeff }
-    }
-  }
-  const rounded = Math.round(n / 1000) * 1000
-  return { value: rounded, label: fmt(rounded), labelEn: fmt(rounded), unit: null, coeff: rounded }
+// ── 数値 → 概数ラベル（最大の単位で表現） ──────────────────────────────────────
+function labelFromValue(value) {
+  if (value <= 0) return { value: 0, label: '0', unit: null, coeff: 0 }
+  let base, unit
+  if (value >= CHOU) { base = CHOU; unit = '兆' }
+  else if (value >= OKU) { base = OKU; unit = '億' }
+  else { base = MAN; unit = '万' }
+  const coeff = Math.round(value / base)
+  return { value, label: `${coeff}${unit}`, unit, coeff }
 }
 
-// ── Choice generation ──────────────────────────────────────────────────────────
-function generateChoices(result) {
-  const correct = toApprox(result)
-  const choiceMap = new Map()
-  choiceMap.set(correct.label, correct)
+// ── 概数への四捨五入（一番大きな位で四捨五入） ────────────────────────────────
+function toApprox(n) {
+  if (n <= 0) return { value: 0, label: '0', unit: null, coeff: 0 }
 
-  const tiers = [
-    { base: CHOU, unit: '兆', unitEn: 'tril' },
-    { base: OKU, unit: '億', unitEn: '100M' },
-    { base: MAN, unit: '万', unitEn: '10K' },
-  ]
+  let base
+  if (n >= CHOU) base = CHOU
+  else if (n >= OKU) base = OKU
+  else base = MAN
 
-  const addChoice = (coeff, base, unit, unitEn) => {
-    if (coeff <= 0 || choiceMap.size >= 4) return
-    const label = `${coeff}${unit}`
-    if (!choiceMap.has(label)) {
-      choiceMap.set(label, { value: coeff * base, label, labelEn: `${coeff}${unitEn}`, unit, unitEn, coeff })
-    }
-  }
+  const raw = n / base
+  const mag = Math.pow(10, Math.floor(Math.log10(raw)))
+  // 日本語の四捨五入（0.5 は切り上げ）。微小値を足して浮動小数の誤差を補正
+  const rounded = Math.round(raw / mag + 1e-10) * mag
+  const value = rounded * base
+  // 桁上がりで上位の単位に達した場合も含め、value から正規化したラベルを生成
+  return labelFromValue(value)
+}
 
-  const correctTierIdx = tiers.findIndex(t => correct.unit === t.unit)
-
-  // Same-unit neighbors
-  if (correct.unit && correctTierIdx >= 0) {
-    const { base, unit, unitEn } = tiers[correctTierIdx]
-    const c = correct.coeff
-    for (const delta of [-1, 1, -2, 2, c, Math.round(c * 1.5)]) {
-      const candidate = c + delta
-      if (candidate > 0 && candidate !== c) addChoice(candidate, base, unit, unitEn)
-      if (choiceMap.size >= 4) break
-    }
-  }
-
-  // Cross-unit distractors
-  for (let i = 0; i < tiers.length && choiceMap.size < 4; i++) {
-    if (i === correctTierIdx) continue
-    const { base, unit, unitEn } = tiers[i]
-    addChoice(randInt(1, 99), base, unit, unitEn)
-  }
-
-  // Fallback
-  while (choiceMap.size < 4) {
-    const tier = tiers[randInt(0, 2)]
-    addChoice(randInt(1, 999), tier.base, tier.unit, tier.unitEn)
-  }
-
-  const arr = Array.from(choiceMap.values()).slice(0, 4)
-  // Fisher-Yates shuffle
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = randInt(0, i)
-    ;[arr[i], arr[j]] = [arr[j], arr[i]]
-  }
-  return arr
+// ── ユーザー入力（数字文字列 + 単位）を数値に変換 ──────────────────────────────
+const UNIT_MULT = { '兆': CHOU, '億': OKU, '万': MAN, '': 1 }
+function parseInput(numStr, unit) {
+  if (!numStr) return null
+  const n = parseInt(numStr, 10)
+  if (Number.isNaN(n)) return null
+  return n * (UNIT_MULT[unit] ?? 1)
 }
 
 // ── CircleTimer component ─────────────────────────────────────────────────────
@@ -336,13 +307,15 @@ export default function App() {
   const [gameConfig, setGameConfig] = useState(null)
   const [questions, setQuestions] = useState([])
   const [qIndex, setQIndex] = useState(0)
-  const [choices, setChoices] = useState([])
   const [timeLeft, setTimeLeft] = useState(0)
   const [phase, setPhase] = useState('question') // question | reveal
-  const [selectedIdx, setSelectedIdx] = useState(null)
   const [sessionScores, setSessionScores] = useState([])
   const [flash, setFlash] = useState(null)
   const [showConfetti, setShowConfetti] = useState(false)
+  // 入力（電卓式）
+  const [inputNum, setInputNum] = useState('')   // 数字部分の文字列
+  const [inputUnit, setInputUnit] = useState('') // '兆' | '億' | '万' | ''
+  const [reveal, setReveal] = useState(null)     // { correct: bool|'timeout', value: number|null }
 
   const timerRef = useRef(null)
   const sessionResultSaved = useRef(false)
@@ -382,7 +355,7 @@ export default function App() {
           clearInterval(timerRef.current)
           timerRef.current = null
           setPhase('reveal')
-          setSelectedIdx(-1)
+          setReveal({ correct: 'timeout', value: null })
           setFlash('wrong')
           setSessionScores(s => [...s, false])
           return 0
@@ -403,25 +376,52 @@ export default function App() {
     setQIndex(0)
     setSessionScores([])
     setPhase('question')
-    setSelectedIdx(null)
+    setInputNum('')
+    setInputUnit('')
+    setReveal(null)
     setFlash(null)
     sessionResultSaved.current = false
-    setChoices(generateChoices(qs[0].result))
     setScreen('game')
     startTimer(LEVEL_TIMES[config.level])
   }, [startTimer])
 
-  // ── Answer handler ────────────────────────────────────────────────────────
-  const handleAnswer = useCallback((idx) => {
+  // ── 入力ハンドラ（電卓式） ──────────────────────────────────────────────────
+  const handleDigit = useCallback((d) => {
     if (phase !== 'question') return
+    if (inputUnit) return // 単位入力後は数字を受け付けない（削除で戻す）
+    setInputNum(prev => (prev === '0' ? d : (prev + d).slice(0, 6)))
+  }, [phase, inputUnit])
+
+  const handleUnit = useCallback((u) => {
+    if (phase !== 'question') return
+    if (!inputNum) return // 数字未入力なら単位を受け付けない
+    setInputUnit(u)
+  }, [phase, inputNum])
+
+  const handleDelete = useCallback(() => {
+    if (phase !== 'question') return
+    if (inputUnit) { setInputUnit(''); return }
+    setInputNum(prev => prev.slice(0, -1))
+  }, [phase, inputUnit])
+
+  const handleClear = useCallback(() => {
+    if (phase !== 'question') return
+    setInputNum('')
+    setInputUnit('')
+  }, [phase])
+
+  // ── 回答送信 ────────────────────────────────────────────────────────────────
+  const handleSubmit = useCallback(() => {
+    if (phase !== 'question' || !inputNum) return
     clearTimer()
-    setSelectedIdx(idx)
     const q = questions[qIndex]
-    const correct = choices[idx]?.label === q.approx.label
+    const val = parseInput(inputNum, inputUnit)
+    const correct = val === q.approx.value
+    setReveal({ correct, value: val })
     setFlash(correct ? 'correct' : 'wrong')
     setSessionScores(prev => [...prev, correct])
     setPhase('reveal')
-  }, [phase, questions, qIndex, choices, clearTimer])
+  }, [phase, inputNum, inputUnit, questions, qIndex, clearTimer])
 
   // ── Next question ─────────────────────────────────────────────────────────
   const handleNext = useCallback(() => {
@@ -432,11 +432,12 @@ export default function App() {
       return
     }
     setQIndex(nextIdx)
-    setChoices(generateChoices(questions[nextIdx].result))
     setPhase('question')
-    setSelectedIdx(null)
+    setInputNum('')
+    setInputUnit('')
+    setReveal(null)
     startTimer(LEVEL_TIMES[gameConfig.level])
-  }, [qIndex, questions, gameConfig, startTimer])
+  }, [qIndex, gameConfig, startTimer])
 
   // ── Save session result ───────────────────────────────────────────────────
   useEffect(() => {
@@ -535,10 +536,13 @@ export default function App() {
           <GameScreen
             t={t} lang={lang}
             q={questions[qIndex]} qIndex={qIndex}
-            choices={choices} timeLeft={timeLeft}
+            timeLeft={timeLeft}
             totalTime={LEVEL_TIMES[gameConfig.level]}
-            phase={phase} selectedIdx={selectedIdx}
-            onAnswer={handleAnswer} onNext={handleNext}
+            phase={phase} reveal={reveal}
+            inputNum={inputNum} inputUnit={inputUnit}
+            onDigit={handleDigit} onUnit={handleUnit}
+            onDelete={handleDelete} onClear={handleClear}
+            onSubmit={handleSubmit} onNext={handleNext}
             section={gameConfig.section} sessionScores={sessionScores}
           />
         )}
@@ -748,14 +752,17 @@ function TestScreen({ t, progress, isUnlocked, isLevelUnlocked, startGame }) {
 }
 
 // ── GameScreen ────────────────────────────────────────────────────────────────
-function GameScreen({ t, lang, q, qIndex, choices, timeLeft, totalTime, phase, selectedIdx, onAnswer, onNext, section, sessionScores }) {
+function GameScreen({ t, lang, q, qIndex, timeLeft, totalTime, phase, reveal,
+  inputNum, inputUnit, onDigit, onUnit, onDelete, onClear, onSubmit, onNext, section, sessionScores }) {
   const isArith = section !== 'number'
-  const correctLabel = lang === 'ja' ? q.approx.label : (q.approx.labelEn || q.approx.label)
-
+  const correctLabel = q.approx.label
   const displayNumber = section === 'number' ? fmt(q.result) : q.display
 
+  const isCorrect = reveal?.correct === true
+  const isTimeout = reveal?.correct === 'timeout'
+
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3">
       {/* Progress bar */}
       <div className="flex items-center gap-2">
         <div className="flex gap-1 flex-1">
@@ -770,10 +777,16 @@ function GameScreen({ t, lang, q, qIndex, choices, timeLeft, totalTime, phase, s
         <span className="text-slate-400 text-xs shrink-0">{qIndex + 1}/{QUESTIONS_PER_SESSION}</span>
       </div>
 
+      {/* 四捨五入ルールの明示 */}
+      <div className="bg-yellow-400/10 border border-yellow-400/40 rounded-xl px-3 py-2 text-center">
+        <div className="text-yellow-300 font-bold text-sm">📐 {t.roundRule}</div>
+        <div className="text-yellow-400/70 text-[11px] mt-0.5">{t.roundHint}</div>
+      </div>
+
       <CircleTimer timeLeft={timeLeft} totalTime={totalTime} />
 
       {/* Question display */}
-      <div className="bg-slate-800 rounded-2xl p-6 text-center border border-slate-700 min-h-[100px] flex flex-col items-center justify-center">
+      <div className="bg-slate-800 rounded-2xl p-5 text-center border border-slate-700 min-h-[90px] flex flex-col items-center justify-center">
         {phase === 'question' ? (
           <div className={`font-black text-white leading-tight ${isArith ? 'text-2xl' : 'text-4xl'}`}>
             {displayNumber}
@@ -782,66 +795,107 @@ function GameScreen({ t, lang, q, qIndex, choices, timeLeft, totalTime, phase, s
           <div>
             {isArith && (
               <>
-                <div className="text-lg text-slate-300">{q.display}</div>
+                <div className="text-base text-slate-300">{q.display}</div>
                 <div className="text-sm text-slate-500 mt-1">= {fmt(q.result)}</div>
               </>
             )}
             {!isArith && (
-              <div className="text-4xl font-black text-white">{displayNumber}</div>
+              <div className="text-3xl font-black text-white">{displayNumber}</div>
             )}
-            <div className="text-3xl font-black text-yellow-300 mt-3">{correctLabel}</div>
+            <div className="text-xs text-slate-400 mt-2">{t.answer}</div>
+            <div className="text-4xl font-black text-yellow-300">{correctLabel}</div>
           </div>
         )}
       </div>
 
-      {/* Choices / reveal */}
       {phase === 'question' ? (
-        <div className="grid grid-cols-2 gap-3">
-          {choices.map((ch, i) => (
-            <button key={i} onClick={() => onAnswer(i)}
-              className="bg-slate-700 active:bg-slate-500 active:scale-95 border border-slate-500 rounded-2xl py-7 text-2xl font-black text-white transition-transform duration-75 cursor-pointer">
-              {lang === 'ja' ? ch.label : (ch.labelEn || ch.label)}
-            </button>
-          ))}
-        </div>
+        <>
+          {/* 入力ディスプレイ */}
+          <div className="bg-slate-900 border-2 border-slate-600 rounded-xl px-4 py-3 min-h-[56px] flex items-center justify-center">
+            {inputNum || inputUnit ? (
+              <span className="text-3xl font-black text-white">
+                {fmt(parseInt(inputNum || '0', 10))}<span className="text-yellow-400">{inputUnit}</span>
+              </span>
+            ) : (
+              <span className="text-slate-600 text-sm">{t.inputPlaceholder}</span>
+            )}
+          </div>
+
+          {/* キーパッド：左=数字 / 右=単位 */}
+          <div className="flex gap-2">
+            <div className="grid grid-cols-3 gap-2 flex-1">
+              {['1','2','3','4','5','6','7','8','9'].map(d => (
+                <button key={d} onClick={() => onDigit(d)}
+                  disabled={!!inputUnit}
+                  className="bg-slate-700 active:bg-slate-500 disabled:opacity-30 rounded-xl py-3 text-2xl font-black text-white transition-transform active:scale-95 cursor-pointer">
+                  {d}
+                </button>
+              ))}
+              <button onClick={onClear}
+                className="bg-slate-800 active:bg-slate-600 rounded-xl py-3 text-sm font-bold text-slate-300 transition-transform active:scale-95 cursor-pointer">
+                {t.clear}
+              </button>
+              <button onClick={() => onDigit('0')}
+                disabled={!!inputUnit}
+                className="bg-slate-700 active:bg-slate-500 disabled:opacity-30 rounded-xl py-3 text-2xl font-black text-white transition-transform active:scale-95 cursor-pointer">
+                0
+              </button>
+              <button onClick={onDelete}
+                className="bg-slate-800 active:bg-slate-600 rounded-xl py-3 text-xl font-bold text-slate-300 transition-transform active:scale-95 cursor-pointer">
+                ←
+              </button>
+            </div>
+            <div className="flex flex-col gap-2 w-16">
+              {['兆','億','万'].map(u => (
+                <button key={u} onClick={() => onUnit(u)}
+                  disabled={!inputNum}
+                  className={`flex-1 rounded-xl text-2xl font-black transition-transform active:scale-95 cursor-pointer disabled:opacity-30
+                    ${inputUnit === u
+                      ? 'bg-yellow-400 text-slate-900'
+                      : 'bg-blue-700 active:bg-blue-500 text-white'}`}>
+                  {u}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 決定ボタン */}
+          <button onClick={onSubmit} disabled={!inputNum}
+            className="w-full bg-yellow-400 disabled:bg-slate-700 disabled:text-slate-500 text-slate-900 font-black text-lg py-4 rounded-2xl active:scale-95 transition cursor-pointer">
+            {t.submit}
+          </button>
+        </>
       ) : (
         <div className="flex flex-col gap-3">
-          {/* Result badge */}
-          <div className={`text-center text-xl font-black py-3 rounded-xl ${
-            selectedIdx === -1
-              ? 'bg-orange-900/50 text-orange-300 border border-orange-700'
-              : choices[selectedIdx]?.label === q.approx.label
-                ? 'bg-green-900/50 text-green-300 border border-green-700'
-                : 'bg-red-900/50 text-red-300 border border-red-700'
+          {/* 判定バッジ */}
+          <div className={`text-center text-xl font-black py-3 rounded-xl border ${
+            isTimeout
+              ? 'bg-orange-900/50 text-orange-300 border-orange-700'
+              : isCorrect
+                ? 'bg-green-900/50 text-green-300 border-green-700'
+                : 'bg-red-900/50 text-red-300 border-red-700'
           }`}>
-            {selectedIdx === -1
-              ? `⏱ ${t.timeout}`
-              : choices[selectedIdx]?.label === q.approx.label
-                ? `✓ ${t.correct}`
-                : `✗ ${t.wrong}`}
+            {isTimeout ? `⏱ ${t.timeout}` : isCorrect ? `✓ ${t.correct}` : `✗ ${t.wrong}`}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            {choices.map((ch, i) => {
-              const isCorrectChoice = ch.label === q.approx.label
-              const isSelected = i === selectedIdx
-              return (
-                <div key={i}
-                  className={`rounded-2xl py-5 text-xl font-black text-center border-2 ${
-                    isCorrectChoice
-                      ? 'bg-green-700/30 border-green-400 text-green-200'
-                      : isSelected
-                        ? 'bg-red-700/30 border-red-400 text-red-200'
-                        : 'bg-slate-800 border-slate-700 text-slate-500'
-                  }`}>
-                  {lang === 'ja' ? ch.label : (ch.labelEn || ch.label)}
+          {/* あなたの回答 vs 正解 */}
+          {!isTimeout && (
+            <div className="flex items-stretch gap-2 text-center">
+              <div className="flex-1 bg-slate-800 rounded-xl py-3 border border-slate-700">
+                <div className="text-xs text-slate-500">{t.yourAnswer}</div>
+                <div className={`text-2xl font-black ${isCorrect ? 'text-green-300' : 'text-red-300'}`}>
+                  {reveal?.value != null ? labelFromValue(reveal.value).label : '—'}
                 </div>
-              )
-            })}
-          </div>
+              </div>
+              <div className="flex-1 bg-slate-800 rounded-xl py-3 border border-green-700">
+                <div className="text-xs text-slate-500">{t.answer}</div>
+                <div className="text-2xl font-black text-yellow-300">{correctLabel}</div>
+              </div>
+            </div>
+          )}
 
           <button onClick={onNext}
-            className="w-full bg-yellow-400 text-slate-900 font-black text-lg py-4 rounded-2xl hover:bg-yellow-300 active:scale-95 transition">
+            className="w-full bg-yellow-400 text-slate-900 font-black text-lg py-4 rounded-2xl active:scale-95 transition cursor-pointer">
             {qIndex + 1 < QUESTIONS_PER_SESSION ? t.next : `${t.score} →`}
           </button>
         </div>
