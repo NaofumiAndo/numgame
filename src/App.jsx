@@ -594,7 +594,8 @@ export default function App() {
         )}
         {screen === 'practice' && (
           <PracticeScreen t={t} isUnlocked={isUnlocked}
-            isLevelUnlocked={isLevelUnlocked} startGame={startGame} />
+            isLevelUnlocked={isLevelUnlocked} highestUnlockedLevel={highestUnlockedLevel}
+            startGame={startGame} />
         )}
         {screen === 'test' && (
           <TestScreen t={t} progress={progress} isUnlocked={isUnlocked}
@@ -693,9 +694,15 @@ function HomeScreen({ t, progress, isUnlocked, highestUnlockedLevel, setScreen }
 }
 
 // ── PracticeScreen ────────────────────────────────────────────────────────────
-function PracticeScreen({ t, isUnlocked, isLevelUnlocked, startGame }) {
+function PracticeScreen({ t, isUnlocked, isLevelUnlocked, highestUnlockedLevel, startGame }) {
   const [selectedSection, setSelectedSection] = useState(null)
   const [selectedLevel, setSelectedLevel] = useState(null)
+
+  // 編を選んだら、デフォルトで解放済みの最高レベルを選択（手動で下げることは可能）
+  const selectSection = (sec) => {
+    setSelectedSection(sec)
+    setSelectedLevel(highestUnlockedLevel(sec))
+  }
 
   return (
     <div className="flex flex-col gap-5">
@@ -703,20 +710,20 @@ function PracticeScreen({ t, isUnlocked, isLevelUnlocked, startGame }) {
 
       <div>
         <div className="text-sm text-slate-400 mb-2">{t.selectSection}</div>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
           {SECTIONS.map(sec => {
             const unlocked = isUnlocked(sec)
             return (
               <button key={sec} disabled={!unlocked}
-                onClick={() => { setSelectedSection(sec); setSelectedLevel(null) }}
-                className={`w-full p-3 rounded-xl text-left flex items-center gap-3 border transition
+                onClick={() => selectSection(sec)}
+                className={`w-full p-5 rounded-2xl text-left flex items-center gap-4 border-2 transition active:scale-95
                   ${!unlocked
                     ? 'opacity-40 cursor-not-allowed bg-slate-800 border-slate-800'
                     : selectedSection === sec
                       ? 'bg-yellow-400/20 border-yellow-400 text-yellow-300'
-                      : 'bg-slate-800 border-slate-600 hover:border-slate-400'}`}>
-                <span>{sectionEmoji(sec)}</span>
-                <span className="font-medium text-sm">{t.sections[sec]}</span>
+                      : 'bg-slate-800 border-slate-600 hover:border-slate-400 cursor-pointer'}`}>
+                <span className="text-3xl">{sectionEmoji(sec)}</span>
+                <span className="font-bold text-lg">{t.sections[sec]}</span>
                 {!unlocked && (
                   <span className="ml-auto text-xs text-slate-600 truncate">{t.unlockHint[sec]}</span>
                 )}
@@ -736,12 +743,12 @@ function PracticeScreen({ t, isUnlocked, isLevelUnlocked, startGame }) {
               return (
                 <button key={lv} disabled={!unlocked}
                   onClick={() => setSelectedLevel(lv)}
-                  className={`py-3 rounded-xl font-black text-lg border transition
+                  className={`py-5 rounded-2xl font-black text-2xl border-2 transition active:scale-95
                     ${!unlocked
                       ? 'opacity-25 cursor-not-allowed bg-slate-800 border-slate-800'
                       : selectedLevel === lv
                         ? 'bg-yellow-400 text-slate-900 border-yellow-400'
-                        : 'bg-slate-800 border-slate-600 hover:border-yellow-400 text-white'}`}>
+                        : 'bg-slate-800 border-slate-600 hover:border-yellow-400 text-white cursor-pointer'}`}>
                   {lv}
                 </button>
               )
