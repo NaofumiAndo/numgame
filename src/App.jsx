@@ -496,7 +496,7 @@ export default function App() {
   const bgFlash = flash === 'correct' ? 'bg-green-500/10' : flash === 'wrong' ? 'bg-red-500/10' : ''
 
   return (
-    <div className={`min-h-screen bg-slate-900 text-white flex flex-col items-center transition-colors duration-200 ${bgFlash}`}>
+    <div className={`min-h-screen bg-slate-900 text-white flex flex-col items-center transition-colors duration-200 select-none ${bgFlash}`}>
       <Confetti active={showConfetti} />
 
       {/* Header */}
@@ -799,7 +799,7 @@ function GameScreen({ t, lang, q, qIndex, choices, timeLeft, totalTime, phase, s
         <div className="grid grid-cols-2 gap-3">
           {choices.map((ch, i) => (
             <button key={i} onClick={() => onAnswer(i)}
-              className="bg-slate-700 hover:bg-slate-600 active:scale-95 border border-slate-500 hover:border-yellow-400 rounded-2xl py-6 text-xl font-black text-white transition">
+              className="bg-slate-700 active:bg-slate-500 active:scale-95 border border-slate-500 rounded-2xl py-7 text-2xl font-black text-white transition-transform duration-75 cursor-pointer">
               {lang === 'ja' ? ch.label : (ch.labelEn || ch.label)}
             </button>
           ))}

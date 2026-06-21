@@ -4,15 +4,29 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  /* タップ時の青ハイライト除去 */
+  -webkit-tap-highlight-color: transparent;
+  /* ダブルタップズーム防止 */
+  touch-action: manipulation;
 }
 
 body {
   background: #0f172a;
   font-family: system-ui, 'Hiragino Sans', 'Meiryo', sans-serif;
+  /* テキスト選択防止 */
+  -webkit-user-select: none;
+  user-select: none;
+  /* iOS スクロールバウンス防止 */
+  overscroll-behavior: none;
 }
 
 #root {
   min-height: 100svh;
+  /* iPhoneのノッチ・ホームバー対応 */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
   display: flex;
   flex-direction: column;
 }
