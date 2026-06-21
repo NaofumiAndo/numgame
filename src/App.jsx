@@ -129,7 +129,13 @@ const SECTIONS = ['number', 'add', 'sub', 'mul', 'div']
 // 数字読み編の基準時間（秒/問）。足し算・引き算・掛け算・割り算は +5秒。
 const LEVEL_TIMES = { 1: 10, 2: 8, 3: 5, 4: 4, 5: 3 }
 const SECTION_TIME_BONUS = 5
+// 編ごとにレベル別の制限時間を上書きする（指定がなければ既定の計算式を使う）
+const SECTION_LEVEL_TIMES = {
+  add: { 1: 15, 2: 15, 3: 15, 4: 10, 5: 5 },
+}
 function levelTime(section, level) {
+  const override = SECTION_LEVEL_TIMES[section]?.[level]
+  if (override != null) return override
   return LEVEL_TIMES[level] + (section === 'number' ? 0 : SECTION_TIME_BONUS)
 }
 const MAX_LEVELS = 5
@@ -168,19 +174,29 @@ function generateBaseNumber() {
   return randInt(1, 999) * CHOU
 }
 
-// 数字読み編・後半（6問目以降）用：「大きな数字 + 単位（兆以外）」の問題
-// 例: 45,550 万 → 値 455,500,000 → 答え 5億。答えは必ず 9000兆 未満になる。
-function generateUnitNumberQuestion() {
+// 整数の桁数を返す（例: 45000000 → 8）
+function digitCount(n) {
+  return String(Math.trunc(Math.abs(n))).length
+}
+
+// 「5桁以上の数字 + 単位（兆以外）」表記の値を生成する
+// 例: 45,550 万 → 値 455,500,000。最大でも約1000兆 < 9000兆。
+// unitMult を渡すと単位を固定できる（未指定なら 万 / 億 をランダム）。
+function generateUnitValue(unitMult = Math.random() < 0.5 ? MAN : OKU) {
   const digitsCount = randInt(5, 7)
   const min = Math.pow(10, digitsCount - 1)
   const max = Math.pow(10, digitsCount) - 1
   const digitPart = randInt(min, max)
-  const unitMult = Math.random() < 0.5 ? MAN : OKU // 万 or 億（兆は使わない）
-  const value = digitPart * unitMult            // 最大でも約1000兆 < 9000兆
+  return digitPart * unitMult
+}
+
+// 数字読み編・後半（6問目以降）用：「大きな数字 + 単位（兆以外）」の問題
+function generateUnitNumberQuestion() {
+  const value = generateUnitValue()
   return { display: value, result: value, op: null, a: null, b: null, kind: 'unitnum' }
 }
 
-function generateQuestion(section, index = 0) {
+function generateQuestion(section, index = 0, level = 1) {
   if (section === 'number') {
     // 後半5問（index 5..9）は「数字＋単位」表記の問題も混ぜる
     if (index >= QUESTIONS_PER_SESSION / 2 && Math.random() < 0.5) {
@@ -190,6 +206,27 @@ function generateQuestion(section, index = 0) {
     return { display: n, result: n, op: null, a: null, b: null }
   }
   if (section === 'add') {
+    // レベル3以上では「5桁以上＋単位」表記同士の足し算も混ぜる
+    if (level >= 3 && Math.random() < 0.5) {
+      const unitMult = Math.random() < 0.5 ? MAN : OKU // 2つとも同じ単位にする
+      const a = generateUnitValue(unitMult)
+      const b = generateUnitValue(unitMult)
+      return {
+        display: `${formatUnitNum(a, 'ja')} + ${formatUnitNum(b, 'ja')}`,
+        result: a + b, op: '+', a, b, kind: 'unitadd',
+      }
+    }
+    // 通常の足し算：レベルに応じて2数の桁数の関係を制約する
+    //   Lv1      : 桁数が2つ以上離れたペアのみ（同桁・1桁差は出さない）
+    //   Lv2以上 : 同じ桁数または1桁差のペアのみ
+    for (let tries = 0; tries < 100; tries++) {
+      const a = generateBaseNumber()
+      const b = generateBaseNumber()
+      const diff = Math.abs(digitCount(a) - digitCount(b))
+      const ok = level === 1 ? diff >= 2 : diff <= 1
+      if (ok) return { display: `${fmt(a)} + ${fmt(b)}`, result: a + b, op: '+', a, b }
+    }
+    // フォールバック（条件を満たすペアが見つからない場合）
     const a = generateBaseNumber()
     const b = generateBaseNumber()
     return { display: `${fmt(a)} + ${fmt(b)}`, result: a + b, op: '+', a, b }
@@ -429,7 +466,7 @@ export default function App() {
   // ── Build & start game ────────────────────────────────────────────────────
   const startGame = useCallback((config) => {
     const qs = Array.from({ length: QUESTIONS_PER_SESSION }, (_, i) => {
-      const q = generateQuestion(config.section, i)
+      const q = generateQuestion(config.section, i, config.level)
       return { ...q, approx: toApprox(q.result) }
     })
     setGameConfig(config)
