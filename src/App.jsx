@@ -181,12 +181,12 @@ function digitCount(n) {
 
 // 「5桁以上の数字 + 単位（兆以外）」表記の値を生成する
 // 例: 45,550 万 → 値 455,500,000。最大でも約1000兆 < 9000兆。
-function generateUnitValue() {
+// unitMult を渡すと単位を固定できる（未指定なら 万 / 億 をランダム）。
+function generateUnitValue(unitMult = Math.random() < 0.5 ? MAN : OKU) {
   const digitsCount = randInt(5, 7)
   const min = Math.pow(10, digitsCount - 1)
   const max = Math.pow(10, digitsCount) - 1
   const digitPart = randInt(min, max)
-  const unitMult = Math.random() < 0.5 ? MAN : OKU // 万 or 億（兆は使わない）
   return digitPart * unitMult
 }
 
@@ -208,8 +208,9 @@ function generateQuestion(section, index = 0, level = 1) {
   if (section === 'add') {
     // レベル3以上では「5桁以上＋単位」表記同士の足し算も混ぜる
     if (level >= 3 && Math.random() < 0.5) {
-      const a = generateUnitValue()
-      const b = generateUnitValue()
+      const unitMult = Math.random() < 0.5 ? MAN : OKU // 2つとも同じ単位にする
+      const a = generateUnitValue(unitMult)
+      const b = generateUnitValue(unitMult)
       return {
         display: `${formatUnitNum(a, 'ja')} + ${formatUnitNum(b, 'ja')}`,
         result: a + b, op: '+', a, b, kind: 'unitadd',
