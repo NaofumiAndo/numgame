@@ -126,7 +126,12 @@ const i18n = {
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const SECTIONS = ['number', 'add', 'sub', 'mul', 'div']
-const LEVEL_TIMES = { 1: 10, 2: 5, 3: 3, 4: 2, 5: 1 }
+// 数字読み編の基準時間（秒/問）。足し算・引き算・掛け算・割り算は +5秒。
+const LEVEL_TIMES = { 1: 10, 2: 8, 3: 5, 4: 4, 5: 3 }
+const SECTION_TIME_BONUS = 5
+function levelTime(section, level) {
+  return LEVEL_TIMES[level] + (section === 'number' ? 0 : SECTION_TIME_BONUS)
+}
 const MAX_LEVELS = 5
 const QUESTIONS_PER_SESSION = 10
 const STORAGE_KEY = 'numgame_progress'
@@ -438,7 +443,7 @@ export default function App() {
     setFlash(null)
     sessionResultSaved.current = false
     setScreen('game')
-    startTimer(LEVEL_TIMES[config.level])
+    startTimer(levelTime(config.section, config.level))
   }, [startTimer])
 
   // ── 入力ハンドラ（電卓式） ──────────────────────────────────────────────────
@@ -487,7 +492,7 @@ export default function App() {
     setInputNum('')
     setInputUnit('')
     setReveal(null)
-    startTimer(LEVEL_TIMES[gameConfig.level])
+    startTimer(levelTime(gameConfig.section, gameConfig.level))
   }, [qIndex, gameConfig, startTimer])
 
   // ── セッション結果を保存（履歴・解放状況の更新） ──────────────────────────────
@@ -608,7 +613,7 @@ export default function App() {
             t={t} lang={lang}
             q={questions[qIndex]} qIndex={qIndex}
             timeLeft={timeLeft}
-            totalTime={LEVEL_TIMES[gameConfig.level]}
+            totalTime={levelTime(gameConfig.section, gameConfig.level)}
             phase={phase} reveal={reveal}
             inputNum={inputNum} inputUnit={inputUnit}
             onDigit={handleDigit} onUnit={handleUnit}
@@ -758,7 +763,7 @@ function PracticeScreen({ t, isUnlocked, isLevelUnlocked, highestUnlockedLevel, 
           </div>
           {selectedLevel && (
             <div className="text-xs text-slate-400 mt-2 text-center">
-              {LEVEL_TIMES[selectedLevel]}{t.seconds} / 問
+              {levelTime(selectedSection, selectedLevel)}{t.seconds} / 問
             </div>
           )}
         </div>
@@ -813,7 +818,7 @@ function TestScreen({ t, progress, isUnlocked, isLevelUnlocked, startGame }) {
                   <span className="text-xl">{sectionEmoji(section)}</span>
                   <div className="text-left">
                     <div className="font-bold text-sm text-white">{t.sections[section]}</div>
-                    <div className="text-xs text-slate-400">{t.level} {level} · {LEVEL_TIMES[level]}{t.seconds}</div>
+                    <div className="text-xs text-slate-400">{t.level} {level} · {levelTime(section, level)}{t.seconds}</div>
                   </div>
                 </div>
                 {cleared
