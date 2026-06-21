@@ -161,8 +161,24 @@ function generateBaseNumber() {
   return randInt(1, 999) * CHOU
 }
 
-function generateQuestion(section) {
+// ただの数字編・後半（6問目以降）用：「大きな数字 + 単位（兆以外）」の問題
+// 例: 45,550 万 → 値 455,500,000 → 答え 5億。答えは必ず 9000兆 未満になる。
+function generateUnitNumberQuestion() {
+  const digitsCount = randInt(5, 7)
+  const min = Math.pow(10, digitsCount - 1)
+  const max = Math.pow(10, digitsCount) - 1
+  const digitPart = randInt(min, max)
+  const unitMult = Math.random() < 0.5 ? MAN : OKU // 万 or 億（兆は使わない）
+  const value = digitPart * unitMult            // 最大でも約1000兆 < 9000兆
+  return { display: value, result: value, op: null, a: null, b: null, kind: 'unitnum' }
+}
+
+function generateQuestion(section, index = 0) {
   if (section === 'number') {
+    // 後半5問（index 5..9）は「数字＋単位」表記の問題も混ぜる
+    if (index >= QUESTIONS_PER_SESSION / 2 && Math.random() < 0.5) {
+      return generateUnitNumberQuestion()
+    }
     const n = generateBaseNumber()
     return { display: n, result: n, op: null, a: null, b: null }
   }
@@ -254,6 +270,24 @@ function parseInput(numStr, unit) {
   const n = parseInt(numStr, 10)
   if (Number.isNaN(n)) return null
   return n * (UNIT_MULT[unit] ?? 1)
+}
+
+// ── 値を「大きな数字 + 単位（最上位以外）」表記に変換（例: 455,500,000 → "45,550 万"） ──
+// 言語に応じて単位系を切り替え、桁数が読みごたえのある（4〜8桁）表記を優先する。
+function formatUnitNum(value, lang = 'ja') {
+  const units = lang === 'ja'
+    ? [{ label: '億', mult: 1e8 }, { label: '万', mult: 1e4 }]
+    : [{ label: 'billion', mult: 1e9 }, { label: 'million', mult: 1e6 }, { label: 'thousand', mult: 1e3 }]
+  for (const u of units) {
+    if (value % u.mult === 0) {
+      const d = value / u.mult
+      const len = String(d).length
+      if (len >= 4 && len <= 8) return `${fmt(d)} ${u.label}`
+    }
+  }
+  // フォールバック：最小単位で割り切れる表記
+  const u = units[units.length - 1]
+  return `${fmt(Math.round(value / u.mult))} ${u.label}`
 }
 
 // ── CircleTimer component ─────────────────────────────────────────────────────
@@ -387,8 +421,8 @@ export default function App() {
 
   // ── Build & start game ────────────────────────────────────────────────────
   const startGame = useCallback((config) => {
-    const qs = Array.from({ length: QUESTIONS_PER_SESSION }, () => {
-      const q = generateQuestion(config.section)
+    const qs = Array.from({ length: QUESTIONS_PER_SESSION }, (_, i) => {
+      const q = generateQuestion(config.section, i)
       return { ...q, approx: toApprox(q.result) }
     })
     setGameConfig(config)
@@ -771,7 +805,9 @@ function GameScreen({ t, lang, q, qIndex, timeLeft, totalTime, phase, reveal,
   inputNum, inputUnit, onDigit, onUnit, onDelete, onClear, onNext, section, sessionScores }) {
   const isArith = section !== 'number'
   const correctLabel = labelFromValue(q.approx.value, lang).label
-  const displayNumber = section === 'number' ? fmt(q.result) : q.display
+  const displayNumber = section === 'number'
+    ? (q.kind === 'unitnum' ? formatUnitNum(q.result, lang) : fmt(q.result))
+    : q.display
   const units = UNITS[lang]
 
   const isCorrect = reveal?.correct === true
@@ -804,7 +840,7 @@ function GameScreen({ t, lang, q, qIndex, timeLeft, totalTime, phase, reveal,
       {/* Question display */}
       <div className="bg-slate-800 rounded-2xl p-5 text-center border border-slate-700 min-h-[90px] flex flex-col items-center justify-center">
         {phase === 'question' ? (
-          <div className={`font-black text-white leading-tight ${isArith ? 'text-2xl' : 'text-4xl'}`}>
+          <div className={`font-black text-white leading-tight ${isArith ? 'text-2xl' : (q.kind === 'unitnum' ? 'text-3xl' : 'text-4xl')}`}>
             {displayNumber}
           </div>
         ) : (
