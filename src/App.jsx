@@ -677,15 +677,15 @@ function HomeScreen({ t, progress, isUnlocked, highestUnlockedLevel, setScreen }
 
       <div className="flex flex-col gap-3">
         <button onClick={() => setScreen('practice')}
-          className="w-full bg-yellow-400 text-slate-900 font-black text-lg py-4 rounded-2xl hover:bg-yellow-300 active:scale-95 transition">
+          className="w-full bg-yellow-400 text-slate-900 font-black text-xl py-7 rounded-2xl hover:bg-yellow-300 active:scale-95 transition">
           {t.practice}
         </button>
         <button onClick={() => setScreen('test')}
-          className="w-full bg-blue-600 text-white font-bold text-lg py-4 rounded-2xl hover:bg-blue-500 active:scale-95 transition">
+          className="w-full bg-blue-600 text-white font-bold text-xl py-7 rounded-2xl hover:bg-blue-500 active:scale-95 transition">
           {t.test}
         </button>
         <button onClick={() => setScreen('history')}
-          className="w-full bg-slate-700 text-slate-300 font-bold py-3 rounded-2xl hover:bg-slate-600 active:scale-95 transition">
+          className="w-full bg-slate-700 text-slate-300 font-bold py-4 rounded-2xl hover:bg-slate-600 active:scale-95 transition">
           {t.history}
         </button>
       </div>
