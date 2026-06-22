@@ -677,8 +677,8 @@ export default function App() {
 // ── HomeScreen ────────────────────────────────────────────────────────────────
 function HomeScreen({ t, progress, isUnlocked, highestUnlockedLevel, setScreen }) {
   return (
-    <div className="flex flex-col gap-5">
-      <div className="text-center mt-2">
+    <div className="flex flex-col gap-4">
+      <div className="text-center">
         <div className="text-3xl font-black text-yellow-400 mb-1">{t.title}</div>
         <div className="text-slate-400 text-sm">{t.subtitle}</div>
       </div>
@@ -721,15 +721,15 @@ function HomeScreen({ t, progress, isUnlocked, highestUnlockedLevel, setScreen }
 
       <div className="flex flex-col gap-3">
         <button onClick={() => setScreen('practice')}
-          className="w-full bg-yellow-400 text-slate-900 font-black text-xl py-10 rounded-2xl hover:bg-yellow-300 active:scale-95 transition">
+          className="w-full bg-yellow-400 text-slate-900 font-black text-xl py-6 rounded-2xl hover:bg-yellow-300 active:scale-95 transition">
           {t.practice}
         </button>
         <button onClick={() => setScreen('test')}
-          className="w-full bg-blue-600 text-white font-bold text-xl py-10 rounded-2xl hover:bg-blue-500 active:scale-95 transition">
+          className="w-full bg-blue-600 text-white font-bold text-xl py-6 rounded-2xl hover:bg-blue-500 active:scale-95 transition">
           {t.test}
         </button>
         <button onClick={() => setScreen('history')}
-          className="w-full bg-slate-700 text-slate-300 font-bold py-4 rounded-2xl hover:bg-slate-600 active:scale-95 transition">
+          className="w-full bg-slate-700 text-slate-300 font-bold py-3 rounded-2xl hover:bg-slate-600 active:scale-95 transition">
           {t.history}
         </button>
       </div>
