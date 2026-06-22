@@ -1,13 +1,19 @@
 @import "tailwindcss";
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  /* タップ時の青ハイライト除去 */
-  -webkit-tap-highlight-color: transparent;
-  /* ダブルタップズーム防止 */
-  touch-action: manipulation;
+/* リセットは base レイヤーに入れる。
+   レイヤー外(unlayered)に置くと、この * セレクタが Tailwind の
+   @layer utilities（py-* などの padding 系）を常に上書きしてしまい、
+   ユーティリティが効かなくなるため。 */
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    /* タップ時の青ハイライト除去 */
+    -webkit-tap-highlight-color: transparent;
+    /* ダブルタップズーム防止 */
+    touch-action: manipulation;
+  }
 }
 
 body {
