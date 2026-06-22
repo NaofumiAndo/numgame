@@ -721,11 +721,11 @@ function HomeScreen({ t, progress, isUnlocked, highestUnlockedLevel, setScreen }
 
       <div className="flex flex-col gap-3">
         <button onClick={() => setScreen('practice')}
-          className="w-full bg-yellow-400 text-slate-900 font-black text-xl py-14 rounded-2xl hover:bg-yellow-300 active:scale-95 transition">
+          className="w-full bg-yellow-400 text-slate-900 font-black text-xl py-28 rounded-2xl hover:bg-yellow-300 active:scale-95 transition">
           {t.practice}
         </button>
         <button onClick={() => setScreen('test')}
-          className="w-full bg-blue-600 text-white font-bold text-xl py-14 rounded-2xl hover:bg-blue-500 active:scale-95 transition">
+          className="w-full bg-blue-600 text-white font-bold text-xl py-28 rounded-2xl hover:bg-blue-500 active:scale-95 transition">
           {t.test}
         </button>
         <button onClick={() => setScreen('history')}
@@ -901,9 +901,9 @@ function GameScreen({ t, lang, q, qIndex, timeLeft, totalTime, phase, reveal,
       </div>
 
       {/* 四捨五入ルールの明示 */}
-      <div className="bg-yellow-400/10 border border-yellow-400/40 rounded-xl px-3 py-2 text-center">
-        <div className="text-yellow-300 font-bold text-sm">📐 {t.roundRule}</div>
-        <div className="text-yellow-400/70 text-[11px] mt-0.5">{t.roundHint}</div>
+      <div className="bg-yellow-400 border-2 border-yellow-300 rounded-xl px-3 py-3 text-center shadow-lg shadow-yellow-400/20">
+        <div className="text-slate-900 font-black text-xl leading-tight">📐 {t.roundRule}</div>
+        <div className="text-slate-800 font-bold text-xs mt-1">{t.roundHint}</div>
       </div>
 
       <CircleTimer timeLeft={timeLeft} totalTime={totalTime} />
