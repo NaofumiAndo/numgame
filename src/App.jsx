@@ -68,6 +68,8 @@ const i18n = {
     promoTag: '昇格試験',
     allClear: '全レベルクリア！',
     tapLevelHint: 'レベルを選んで挑戦',
+    doPractice: '練習する',
+    chooseMode: 'どちらで挑戦する？',
   },
   en: {
     title: 'Number Sense Trainer',
@@ -135,6 +137,8 @@ const i18n = {
     promoTag: 'Promotion Test',
     allClear: 'All levels cleared!',
     tapLevelHint: 'Pick a level to play',
+    doPractice: 'Practice',
+    chooseMode: 'How would you like to play?',
   },
 }
 
@@ -786,10 +790,12 @@ function SectionScreen({ t, section, progress, isLevelUnlocked, startGame }) {
             )
           }
 
-          // クリア済み → 練習 ／ 次に解放すべき → 昇格試験（確認あり）
+          // クリア済み → 即・練習 ／ 次に解放すべき → ダイアログ
+          // Lv.1 は「練習」か「昇格試験」を選べる。Lv.2 以降は昇格試験の確認のみ。
           const onClick = cleared
             ? () => startGame({ section, level: lv, mode: 'practice' })
-            : () => setPendingTest({ level: lv })
+            : () => setPendingTest({ level: lv, choice: lv === 1 })
+          const frontierLabel = lv === 1 ? `${t.doPractice}・${t.promoTag}` : t.promoTag
 
           return (
             <button key={lv} onClick={onClick}
@@ -801,7 +807,7 @@ function SectionScreen({ t, section, progress, isLevelUnlocked, startGame }) {
                 <span className={`text-2xl font-black w-7 text-center ${cleared ? 'text-green-300' : 'text-blue-300'}`}>{lv}</span>
                 <div className="text-left">
                   <div className={`font-bold text-sm ${cleared ? 'text-green-300' : 'text-blue-200'}`}>
-                    {cleared ? t.modeLabel.practice : t.promoTag}
+                    {cleared ? t.modeLabel.practice : frontierLabel}
                   </div>
                   <div className="text-xs text-slate-400">{timeText}</div>
                 </div>
@@ -814,33 +820,65 @@ function SectionScreen({ t, section, progress, isLevelUnlocked, startGame }) {
         })}
       </div>
 
-      {/* 昇格試験の確認ダイアログ */}
+      {/* レベル開始ダイアログ */}
       {pendingTest && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-6"
           onClick={() => setPendingTest(null)}>
           <div onClick={e => e.stopPropagation()}
             className="bg-slate-800 border border-slate-600 rounded-2xl p-6 w-full max-w-[320px] text-center flex flex-col gap-4">
-            <div>
-              <div className="text-lg font-black text-white">{t.sections[section]} {t.level} {pendingTest.level}</div>
-              <div className="text-blue-300 font-bold mt-1">{t.promotionTestQ}</div>
-            </div>
-            <div className="text-xs text-amber-300/90 bg-amber-900/20 border border-amber-800/40 rounded-lg px-3 py-2">
-              ⚠️ {t.testFailNote}
-            </div>
-            <div className="flex gap-3">
-              <button onClick={() => setPendingTest(null)}
-                className="flex-1 py-3 rounded-xl font-bold bg-slate-700 text-slate-300 active:scale-95 transition cursor-pointer">
-                {t.cancelTest}
-              </button>
-              <button onClick={() => {
-                  const lv = pendingTest.level
-                  setPendingTest(null)
-                  startGame({ section, level: lv, mode: 'test' })
-                }}
-                className="flex-1 py-3 rounded-xl font-black bg-blue-600 text-white hover:bg-blue-500 active:scale-95 transition cursor-pointer">
-                {t.beginTest}
-              </button>
-            </div>
+            <div className="text-lg font-black text-white">{t.sections[section]} {t.level} {pendingTest.level}</div>
+
+            {pendingTest.choice ? (
+              // Lv.1：練習か昇格試験を選ぶ
+              <>
+                <div className="text-slate-300 text-sm">{t.chooseMode}</div>
+                <div className="flex flex-col gap-3">
+                  <button onClick={() => {
+                      const lv = pendingTest.level
+                      setPendingTest(null)
+                      startGame({ section, level: lv, mode: 'practice' })
+                    }}
+                    className="w-full py-3 rounded-xl font-black bg-yellow-400 text-slate-900 hover:bg-yellow-300 active:scale-95 transition cursor-pointer">
+                    {t.doPractice}
+                  </button>
+                  <button onClick={() => {
+                      const lv = pendingTest.level
+                      setPendingTest(null)
+                      startGame({ section, level: lv, mode: 'test' })
+                    }}
+                    className="w-full py-3 rounded-xl font-black bg-blue-600 text-white hover:bg-blue-500 active:scale-95 transition cursor-pointer">
+                    {t.promoTag}
+                  </button>
+                </div>
+                <div className="text-[11px] text-amber-300/80">⚠️ {t.testFailNote}</div>
+                <button onClick={() => setPendingTest(null)}
+                  className="text-slate-400 text-sm font-bold active:scale-95 transition cursor-pointer">
+                  {t.cancelTest}
+                </button>
+              </>
+            ) : (
+              // Lv.2 以降：昇格試験の確認のみ
+              <>
+                <div className="text-blue-300 font-bold">{t.promotionTestQ}</div>
+                <div className="text-xs text-amber-300/90 bg-amber-900/20 border border-amber-800/40 rounded-lg px-3 py-2">
+                  ⚠️ {t.testFailNote}
+                </div>
+                <div className="flex gap-3">
+                  <button onClick={() => setPendingTest(null)}
+                    className="flex-1 py-3 rounded-xl font-bold bg-slate-700 text-slate-300 active:scale-95 transition cursor-pointer">
+                    {t.cancelTest}
+                  </button>
+                  <button onClick={() => {
+                      const lv = pendingTest.level
+                      setPendingTest(null)
+                      startGame({ section, level: lv, mode: 'test' })
+                    }}
+                    className="flex-1 py-3 rounded-xl font-black bg-blue-600 text-white hover:bg-blue-500 active:scale-95 transition cursor-pointer">
+                    {t.beginTest}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
