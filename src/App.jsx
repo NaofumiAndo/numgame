@@ -471,21 +471,28 @@ export default function App() {
   const startTimer = useCallback((seconds) => {
     clearTimer()
     setTimeLeft(seconds)
+    // 更新関数の中では副作用を起こさない（純粋に減算するだけ）。
+    // 時間切れ（0到達）の処理は下の useEffect で行う。
     timerRef.current = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          clearInterval(timerRef.current)
-          timerRef.current = null
-          setPhase('reveal')
-          setReveal({ correct: 'timeout', value: null })
-          setFlash('wrong')
-          setSessionScores(s => [...s, false])
-          return 0
-        }
-        return prev - 1
-      })
+      setTimeLeft(prev => (prev <= 0 ? 0 : prev - 1))
     }, 1000)
   }, [clearTimer])
+
+  // ── 時間切れ処理 ────────────────────────────────────────────────────────────
+  // タイマーが 0 に到達したら不正解扱いで結果表示へ。
+  const handleTimeout = useCallback(() => {
+    clearTimer()
+    setReveal({ correct: 'timeout', value: null })
+    setFlash('wrong')
+    setSessionScores(s => [...s, false])
+    setPhase('reveal')
+  }, [clearTimer])
+
+  useEffect(() => {
+    if (screen === 'game' && phase === 'question' && timeLeft === 0 && timerRef.current) {
+      handleTimeout()
+    }
+  }, [screen, phase, timeLeft, handleTimeout])
 
   // ── Build & start game ────────────────────────────────────────────────────
   const startGame = useCallback((config) => {
@@ -1011,21 +1018,19 @@ function GameScreen({ t, lang, q, qIndex, timeLeft, totalTime, phase, reveal,
             {isTimeout ? `⏱ ${t.timeout}` : isCorrect ? `✓ ${t.correct}` : `✗ ${t.wrong}`}
           </div>
 
-          {/* あなたの回答 vs 正解 */}
-          {!isTimeout && (
-            <div className="flex items-stretch gap-2 text-center">
-              <div className="flex-1 bg-slate-800 rounded-xl py-3 border border-slate-700">
-                <div className="text-xs text-slate-500">{t.yourAnswer}</div>
-                <div className={`text-2xl font-black ${isCorrect ? 'text-green-300' : 'text-red-300'}`}>
-                  {reveal?.value != null ? labelFromValue(reveal.value, lang).label : '—'}
-                </div>
-              </div>
-              <div className="flex-1 bg-slate-800 rounded-xl py-3 border border-green-700">
-                <div className="text-xs text-slate-500">{t.answer}</div>
-                <div className="text-2xl font-black text-yellow-300">{correctLabel}</div>
+          {/* あなたの回答 vs 正解（時間切れでも正解を表示する） */}
+          <div className="flex items-stretch gap-2 text-center">
+            <div className="flex-1 bg-slate-800 rounded-xl py-3 border border-slate-700">
+              <div className="text-xs text-slate-500">{t.yourAnswer}</div>
+              <div className={`text-2xl font-black ${isCorrect ? 'text-green-300' : 'text-red-300'}`}>
+                {reveal?.value != null ? labelFromValue(reveal.value, lang).label : '—'}
               </div>
             </div>
-          )}
+            <div className="flex-1 bg-slate-800 rounded-xl py-3 border border-green-700">
+              <div className="text-xs text-slate-500">{t.answer}</div>
+              <div className="text-2xl font-black text-yellow-300">{correctLabel}</div>
+            </div>
+          </div>
 
           {testFailed ? (
             <>
