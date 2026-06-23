@@ -61,6 +61,13 @@ const i18n = {
     question: '問',
     seconds: '秒',
     currentLevel: '現在のレベル',
+    promotionTestQ: '昇格試験を始めますか？',
+    beginTest: '始める',
+    cancelTest: 'やめる',
+    clearedTag: 'クリア済み',
+    promoTag: '昇格試験',
+    allClear: '全レベルクリア！',
+    tapLevelHint: 'レベルを選んで挑戦',
   },
   en: {
     title: 'Number Sense Trainer',
@@ -121,6 +128,13 @@ const i18n = {
     question: 'Q',
     seconds: 's',
     currentLevel: 'Current Level',
+    promotionTestQ: 'Start the promotion test?',
+    beginTest: 'Start',
+    cancelTest: 'Cancel',
+    clearedTag: 'Cleared',
+    promoTag: 'Promotion Test',
+    allClear: 'All levels cleared!',
+    tapLevelHint: 'Pick a level to play',
   },
 }
 
@@ -399,7 +413,13 @@ export default function App() {
   const t = i18n[lang]
 
   const [screen, setScreen] = useState('home')
+  const [viewSection, setViewSection] = useState('number') // 編詳細で表示中の編
   const [progress, setProgress] = useState(() => loadProgress())
+
+  const openSection = useCallback((sec) => {
+    setViewSection(sec)
+    setScreen('section')
+  }, [])
 
   // Session state
   const [gameConfig, setGameConfig] = useState(null)
@@ -634,15 +654,11 @@ export default function App() {
       <main className="w-full max-w-[430px] flex-1 flex flex-col px-4 py-4 overflow-y-auto">
         {screen === 'home' && (
           <HomeScreen t={t} progress={progress} isUnlocked={isUnlocked}
-            highestUnlockedLevel={highestUnlockedLevel} setScreen={setScreen} />
+            highestUnlockedLevel={highestUnlockedLevel}
+            onOpenSection={openSection} setScreen={setScreen} />
         )}
-        {screen === 'practice' && (
-          <PracticeScreen t={t} isUnlocked={isUnlocked}
-            isLevelUnlocked={isLevelUnlocked} highestUnlockedLevel={highestUnlockedLevel}
-            startGame={startGame} />
-        )}
-        {screen === 'test' && (
-          <TestScreen t={t} progress={progress} isUnlocked={isUnlocked}
+        {screen === 'section' && (
+          <SectionScreen t={t} section={viewSection} progress={progress}
             isLevelUnlocked={isLevelUnlocked} startGame={startGame} />
         )}
         {screen === 'game' && gameConfig && questions[qIndex] && (
@@ -675,7 +691,8 @@ export default function App() {
 }
 
 // ── HomeScreen ────────────────────────────────────────────────────────────────
-function HomeScreen({ t, progress, isUnlocked, highestUnlockedLevel, setScreen }) {
+// 編を選ぶだけのシンプルなホーム。編をタップ → その編のレベル一覧へ。
+function HomeScreen({ t, progress, isUnlocked, highestUnlockedLevel, onOpenSection, setScreen }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="text-center">
@@ -688,9 +705,12 @@ function HomeScreen({ t, progress, isUnlocked, highestUnlockedLevel, setScreen }
           const unlocked = isUnlocked(sec)
           const lv = highestUnlockedLevel(sec)
           return (
-            <div key={sec}
-              className={`rounded-xl p-3 flex items-center justify-between border transition
-                ${unlocked ? 'bg-slate-800 border-slate-600' : 'bg-slate-800/30 border-slate-800'}`}>
+            <button key={sec} disabled={!unlocked}
+              onClick={() => onOpenSection(sec)}
+              className={`w-full text-left rounded-xl p-3 flex items-center justify-between border transition
+                ${unlocked
+                  ? 'bg-slate-800 border-slate-600 hover:border-yellow-400 active:scale-[0.98] cursor-pointer'
+                  : 'bg-slate-800/30 border-slate-800 cursor-not-allowed'}`}>
               <div className="flex items-center gap-3">
                 <span className="text-2xl">{sectionEmoji(sec)}</span>
                 <div>
@@ -704,166 +724,124 @@ function HomeScreen({ t, progress, isUnlocked, highestUnlockedLevel, setScreen }
               </div>
               <div className="flex items-center gap-2">
                 {unlocked ? (
-                  <div className="flex gap-1">
-                    {Array.from({ length: MAX_LEVELS }, (_, i) => (
-                      <div key={i}
-                        className={`w-2 h-2 rounded-full ${progress.clearedLevels?.[`${sec}-${i + 1}`] ? 'bg-yellow-400' : 'bg-slate-700'}`} />
-                    ))}
-                  </div>
+                  <>
+                    <div className="flex gap-1">
+                      {Array.from({ length: MAX_LEVELS }, (_, i) => (
+                        <div key={i}
+                          className={`w-2 h-2 rounded-full ${progress.clearedLevels?.[`${sec}-${i + 1}`] ? 'bg-yellow-400' : 'bg-slate-700'}`} />
+                      ))}
+                    </div>
+                    <span className="text-slate-500 text-lg leading-none">›</span>
+                  </>
                 ) : (
                   <span className="text-slate-700">🔒</span>
                 )}
               </div>
-            </div>
+            </button>
           )
         })}
       </div>
 
-      <div className="flex flex-col gap-3">
-        <button onClick={() => setScreen('practice')}
-          className="w-full bg-yellow-400 text-slate-900 font-black text-xl py-6 rounded-2xl hover:bg-yellow-300 active:scale-95 transition">
-          {t.practice}
-        </button>
-        <button onClick={() => setScreen('test')}
-          className="w-full bg-blue-600 text-white font-bold text-xl py-6 rounded-2xl hover:bg-blue-500 active:scale-95 transition">
-          {t.test}
-        </button>
-        <button onClick={() => setScreen('history')}
-          className="w-full bg-slate-700 text-slate-300 font-bold py-3 rounded-2xl hover:bg-slate-600 active:scale-95 transition">
-          {t.history}
-        </button>
-      </div>
-    </div>
-  )
-}
-
-// ── PracticeScreen ────────────────────────────────────────────────────────────
-function PracticeScreen({ t, isUnlocked, isLevelUnlocked, highestUnlockedLevel, startGame }) {
-  const [selectedSection, setSelectedSection] = useState(null)
-  const [selectedLevel, setSelectedLevel] = useState(null)
-
-  // 編を選んだら、デフォルトで解放済みの最高レベルを選択（手動で下げることは可能）
-  const selectSection = (sec) => {
-    setSelectedSection(sec)
-    setSelectedLevel(highestUnlockedLevel(sec))
-  }
-
-  return (
-    <div className="flex flex-col gap-5">
-      <h2 className="text-xl font-bold text-yellow-400">{t.practice}</h2>
-
-      <div>
-        <div className="text-sm text-slate-400 mb-2">{t.selectSection}</div>
-        <div className="flex flex-col gap-3">
-          {SECTIONS.map(sec => {
-            const unlocked = isUnlocked(sec)
-            return (
-              <button key={sec} disabled={!unlocked}
-                onClick={() => selectSection(sec)}
-                className={`w-full p-5 rounded-2xl text-left flex items-center gap-4 border-2 transition active:scale-95
-                  ${!unlocked
-                    ? 'opacity-40 cursor-not-allowed bg-slate-800 border-slate-800'
-                    : selectedSection === sec
-                      ? 'bg-yellow-400/20 border-yellow-400 text-yellow-300'
-                      : 'bg-slate-800 border-slate-600 hover:border-slate-400 cursor-pointer'}`}>
-                <span className="text-3xl">{sectionEmoji(sec)}</span>
-                <span className="font-bold text-lg">{t.sections[sec]}</span>
-                {!unlocked && (
-                  <span className="ml-auto text-xs text-slate-600 truncate">{t.unlockHint[sec]}</span>
-                )}
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
-      {selectedSection && (
-        <div>
-          <div className="text-sm text-slate-400 mb-2">{t.selectLevel}</div>
-          <div className="grid grid-cols-5 gap-2">
-            {Array.from({ length: MAX_LEVELS }, (_, i) => {
-              const lv = i + 1
-              const unlocked = isLevelUnlocked(selectedSection, lv)
-              return (
-                <button key={lv} disabled={!unlocked}
-                  onClick={() => setSelectedLevel(lv)}
-                  className={`py-5 rounded-2xl font-black text-2xl border-2 transition active:scale-95
-                    ${!unlocked
-                      ? 'opacity-25 cursor-not-allowed bg-slate-800 border-slate-800'
-                      : selectedLevel === lv
-                        ? 'bg-yellow-400 text-slate-900 border-yellow-400'
-                        : 'bg-slate-800 border-slate-600 hover:border-yellow-400 text-white cursor-pointer'}`}>
-                  {lv}
-                </button>
-              )
-            })}
-          </div>
-          {selectedLevel && (
-            <div className="text-xs text-slate-400 mt-2 text-center">
-              {levelTime(selectedSection, selectedLevel)}{t.seconds} / 問
-            </div>
-          )}
-        </div>
-      )}
-
-      <button
-        disabled={!selectedSection || !selectedLevel}
-        onClick={() => startGame({ section: selectedSection, level: selectedLevel, mode: 'practice' })}
-        className={`w-full py-4 rounded-2xl font-black text-lg transition mt-auto
-          ${selectedSection && selectedLevel
-            ? 'bg-yellow-400 text-slate-900 hover:bg-yellow-300 active:scale-95'
-            : 'bg-slate-700 text-slate-500 cursor-not-allowed'}`}>
-        {t.beginSession}
+      <button onClick={() => setScreen('history')}
+        className="w-full bg-slate-700/60 text-slate-300 font-bold py-3 rounded-2xl hover:bg-slate-600 active:scale-95 transition text-sm">
+        {t.history}
       </button>
     </div>
   )
 }
 
-// ── TestScreen ────────────────────────────────────────────────────────────────
-function TestScreen({ t, progress, isUnlocked, isLevelUnlocked, startGame }) {
-  const available = []
-  for (const sec of SECTIONS) {
-    if (!isUnlocked(sec)) continue
-    for (let lv = 1; lv <= MAX_LEVELS; lv++) {
-      if (isLevelUnlocked(sec, lv)) {
-        available.push({ section: sec, level: lv })
-      }
-    }
-  }
+// ── SectionScreen（編の詳細：レベルを選んで開始） ──────────────────────────────
+// クリア済みレベル → 即・練習。次に解放すべきレベル → 確認後に昇格試験。
+function SectionScreen({ t, section, progress, isLevelUnlocked, startGame }) {
+  const [pendingTest, setPendingTest] = useState(null) // { level } | null
 
   return (
     <div className="flex flex-col gap-4">
-      <h2 className="text-xl font-bold text-blue-400">{t.test}</h2>
-      <div className="text-sm text-slate-300 bg-blue-900/30 border border-blue-800/50 rounded-xl p-3">
-        {t.testRule}
+      <div className="flex items-center gap-3">
+        <span className="text-3xl">{sectionEmoji(section)}</span>
+        <div>
+          <h2 className="text-xl font-bold text-yellow-400">{t.sections[section]}</h2>
+          <div className="text-xs text-slate-400">{t.tapLevelHint}</div>
+        </div>
       </div>
 
-      {available.length === 0 ? (
-        <div className="text-slate-500 text-sm text-center whitespace-pre-line mt-10">{t.noTests}</div>
-      ) : (
-        <div className="flex flex-col gap-2">
-          {available.map(({ section, level }) => {
-            const cleared = progress.clearedLevels?.[`${section}-${level}`]
+      <div className="flex flex-col gap-3">
+        {Array.from({ length: MAX_LEVELS }, (_, i) => {
+          const lv = i + 1
+          const cleared = progress.clearedLevels?.[`${section}-${lv}`] === true
+          const unlocked = isLevelUnlocked(section, lv)
+          const timeText = `${levelTime(section, lv)}${t.seconds}/${t.question}`
+
+          // ロック中：押せない
+          if (!cleared && !unlocked) {
             return (
-              <button key={`${section}-${level}`}
-                onClick={() => startGame({ section, level, mode: 'test' })}
-                className={`w-full p-4 rounded-xl flex items-center justify-between border transition active:scale-95
-                  ${cleared
-                    ? 'bg-green-900/20 border-green-800 hover:border-green-500'
-                    : 'bg-slate-800 border-slate-600 hover:border-blue-400'}`}>
+              <div key={lv}
+                className="w-full p-4 rounded-2xl flex items-center justify-between border-2 bg-slate-800/30 border-slate-800 opacity-50">
                 <div className="flex items-center gap-3">
-                  <span className="text-xl">{sectionEmoji(section)}</span>
-                  <div className="text-left">
-                    <div className="font-bold text-sm text-white">{t.sections[section]}</div>
-                    <div className="text-xs text-slate-400">{t.level} {level} · {levelTime(section, level)}{t.seconds}</div>
-                  </div>
+                  <span className="text-2xl font-black text-slate-600 w-7 text-center">{lv}</span>
+                  <span className="text-sm text-slate-600">{t.locked}</span>
                 </div>
-                {cleared
-                  ? <span className="text-green-400 font-bold">✓</span>
-                  : <span className="text-blue-400">→</span>}
-              </button>
+                <span className="text-slate-700">🔒</span>
+              </div>
             )
-          })}
+          }
+
+          // クリア済み → 練習 ／ 次に解放すべき → 昇格試験（確認あり）
+          const onClick = cleared
+            ? () => startGame({ section, level: lv, mode: 'practice' })
+            : () => setPendingTest({ level: lv })
+
+          return (
+            <button key={lv} onClick={onClick}
+              className={`w-full p-4 rounded-2xl flex items-center justify-between border-2 transition active:scale-95 cursor-pointer
+                ${cleared
+                  ? 'bg-green-900/20 border-green-700 hover:border-green-400'
+                  : 'bg-blue-600/15 border-blue-500 hover:border-blue-300'}`}>
+              <div className="flex items-center gap-3">
+                <span className={`text-2xl font-black w-7 text-center ${cleared ? 'text-green-300' : 'text-blue-300'}`}>{lv}</span>
+                <div className="text-left">
+                  <div className={`font-bold text-sm ${cleared ? 'text-green-300' : 'text-blue-200'}`}>
+                    {cleared ? t.modeLabel.practice : t.promoTag}
+                  </div>
+                  <div className="text-xs text-slate-400">{timeText}</div>
+                </div>
+              </div>
+              {cleared
+                ? <span className="text-green-400 text-xs font-bold">{t.clearedTag} ✓</span>
+                : <span className="text-blue-300 text-lg">▶</span>}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* 昇格試験の確認ダイアログ */}
+      {pendingTest && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-6"
+          onClick={() => setPendingTest(null)}>
+          <div onClick={e => e.stopPropagation()}
+            className="bg-slate-800 border border-slate-600 rounded-2xl p-6 w-full max-w-[320px] text-center flex flex-col gap-4">
+            <div>
+              <div className="text-lg font-black text-white">{t.sections[section]} {t.level} {pendingTest.level}</div>
+              <div className="text-blue-300 font-bold mt-1">{t.promotionTestQ}</div>
+            </div>
+            <div className="text-xs text-amber-300/90 bg-amber-900/20 border border-amber-800/40 rounded-lg px-3 py-2">
+              ⚠️ {t.testFailNote}
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => setPendingTest(null)}
+                className="flex-1 py-3 rounded-xl font-bold bg-slate-700 text-slate-300 active:scale-95 transition cursor-pointer">
+                {t.cancelTest}
+              </button>
+              <button onClick={() => {
+                  const lv = pendingTest.level
+                  setPendingTest(null)
+                  startGame({ section, level: lv, mode: 'test' })
+                }}
+                className="flex-1 py-3 rounded-xl font-black bg-blue-600 text-white hover:bg-blue-500 active:scale-95 transition cursor-pointer">
+                {t.beginTest}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
