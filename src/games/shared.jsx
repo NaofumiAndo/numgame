@@ -13,11 +13,11 @@ export function CircleTimer({ timeLeft, totalTime }) {
   return (
     <div className="flex items-center justify-center">
       <svg width="100" height="100" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r={R} fill="none" stroke="#1e293b" strokeWidth="8" />
+        <circle cx="50" cy="50" r={R} fill="none" stroke="#f1e7de" strokeWidth="8" />
         <circle
           cx="50" cy="50" r={R}
           fill="none"
-          stroke={isRed ? '#ef4444' : '#facc15'}
+          stroke={isRed ? '#fb7185' : '#fbbf24'}
           strokeWidth="8"
           strokeDasharray={`${dash} ${CIRC}`}
           strokeLinecap="round"
@@ -25,7 +25,7 @@ export function CircleTimer({ timeLeft, totalTime }) {
           style={{ transition: 'stroke-dasharray 0.25s linear, stroke 0.3s' }}
         />
         <text x="50" y="57" textAnchor="middle" fontSize="22" fontWeight="bold"
-          fill={isRed ? '#ef4444' : '#facc15'} fontFamily="system-ui">
+          fill={isRed ? '#fb7185' : '#f59e0b'} fontFamily="system-ui">
           {timeLeft}
         </text>
       </svg>
@@ -35,7 +35,7 @@ export function CircleTimer({ timeLeft, totalTime }) {
 
 // ── Confetti：合格・クリア時の紙吹雪 ────────────────────────────────────────────
 export function Confetti({ active }) {
-  const colors = ['#facc15', '#f97316', '#22c55e', '#3b82f6', '#a855f7', '#ec4899']
+  const colors = ['#fcd34d', '#fdba74', '#86efac', '#93c5fd', '#c4b5fd', '#f9a8d4']
   if (!active) return null
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden z-50">
@@ -67,20 +67,20 @@ export function NumPad({ onDigit, onDelete, onClear, clearLabel = 'C' }) {
     <div className="grid grid-cols-3 gap-2">
       {['1','2','3','4','5','6','7','8','9'].map(d => (
         <button key={d} onClick={() => onDigit(d)}
-          className="bg-slate-700 active:bg-slate-500 rounded-xl py-3 text-2xl font-black text-white transition-transform active:scale-95 cursor-pointer">
+          className="bg-white border border-slate-200 shadow-sm active:bg-slate-100 rounded-xl py-3 text-2xl font-black text-slate-700 transition-transform active:scale-95 cursor-pointer">
           {d}
         </button>
       ))}
       <button onClick={onClear}
-        className="bg-slate-800 active:bg-slate-600 rounded-xl py-3 text-sm font-bold text-slate-300 transition-transform active:scale-95 cursor-pointer">
+        className="bg-slate-100 active:bg-slate-200 rounded-xl py-3 text-sm font-bold text-slate-500 transition-transform active:scale-95 cursor-pointer">
         {clearLabel}
       </button>
       <button onClick={() => onDigit('0')}
-        className="bg-slate-700 active:bg-slate-500 rounded-xl py-3 text-2xl font-black text-white transition-transform active:scale-95 cursor-pointer">
+        className="bg-white border border-slate-200 shadow-sm active:bg-slate-100 rounded-xl py-3 text-2xl font-black text-slate-700 transition-transform active:scale-95 cursor-pointer">
         0
       </button>
       <button onClick={onDelete}
-        className="bg-slate-800 active:bg-slate-600 rounded-xl py-3 text-xl font-bold text-slate-300 transition-transform active:scale-95 cursor-pointer">
+        className="bg-slate-100 active:bg-slate-200 rounded-xl py-3 text-xl font-bold text-slate-500 transition-transform active:scale-95 cursor-pointer">
         ←
       </button>
     </div>

@@ -123,16 +123,16 @@ export default function IndianMultiplicationGame({ lang, setLang, onExit }) {
   const hint = q ? indianHint(q.a, q.b) : null
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center select-none">
+    <div className="min-h-screen bg-violet-50 text-slate-700 flex flex-col items-center select-none">
       <Confetti active={confetti} />
 
-      <header className="w-full max-w-[430px] flex items-center justify-between px-4 py-3 border-b border-slate-700 shrink-0">
+      <header className="w-full max-w-[430px] flex items-center justify-between px-4 py-3 border-b border-violet-100 shrink-0">
         <div className="flex items-center gap-2">
-          <button onClick={onBack} className="text-slate-400 hover:text-white text-xl leading-none px-1">←</button>
-          <span className="text-violet-400 font-black text-base">{t('インド式 九九', 'Indian Tables')}</span>
+          <button onClick={onBack} className="text-slate-400 hover:text-slate-600 text-xl leading-none px-1">←</button>
+          <span className="text-violet-500 font-black text-base">{t('インド式 九九', 'Indian Tables')}</span>
         </div>
         <button onClick={() => setLang(l => (l === 'ja' ? 'en' : 'ja'))}
-          className="text-xs border border-slate-600 rounded px-2 py-1 text-slate-300 hover:border-violet-400 hover:text-violet-400 transition">
+          className="text-xs border border-slate-300 rounded px-2 py-1 text-slate-500 hover:border-violet-400 hover:text-violet-500 transition">
           {lang === 'ja' ? 'EN' : 'JP'}
         </button>
       </header>
@@ -154,8 +154,8 @@ export default function IndianMultiplicationGame({ lang, setLang, onExit }) {
               <div className="flex gap-1 flex-1">
                 {Array.from({ length: SESSION_Q }, (_, i) => (
                   <div key={i} className={`h-2 flex-1 rounded-full ${
-                    i < scores.length ? (scores[i] ? 'bg-green-400' : 'bg-red-400')
-                      : i === qi ? 'bg-violet-400' : 'bg-slate-700'
+                    i < scores.length ? (scores[i] ? 'bg-emerald-300' : 'bg-rose-300')
+                      : i === qi ? 'bg-violet-400' : 'bg-violet-100'
                   }`} />
                 ))}
               </div>
@@ -163,19 +163,19 @@ export default function IndianMultiplicationGame({ lang, setLang, onExit }) {
             </div>
 
             {/* 出題カード */}
-            <div className={`rounded-2xl py-7 text-center border-2 transition-colors
+            <div className={`rounded-2xl py-7 text-center border-2 transition-colors shadow-sm
               ${phase === 'reveal'
-                ? (lastCorrect ? 'bg-green-900/40 border-green-500' : 'bg-red-900/40 border-red-500')
-                : 'bg-slate-800 border-violet-500/60'}`}>
-              <div className="text-5xl font-black text-white tracking-wide">
+                ? (lastCorrect ? 'bg-emerald-50 border-emerald-300' : 'bg-rose-50 border-rose-300')
+                : 'bg-white border-violet-200'}`}>
+              <div className="text-5xl font-black text-slate-700 tracking-wide">
                 {q.a} <span className="text-violet-400">×</span> {q.b}
-                <span className="text-slate-500"> = </span>
+                <span className="text-slate-300"> = </span>
                 {phase === 'reveal'
-                  ? <span className={lastCorrect ? 'text-green-300' : 'text-yellow-300'}>{q.answer}</span>
-                  : <span className="text-yellow-300">{input || '?'}</span>}
+                  ? <span className={lastCorrect ? 'text-emerald-500' : 'text-amber-500'}>{q.answer}</span>
+                  : <span className="text-amber-500">{input || '?'}</span>}
               </div>
               {phase === 'reveal' && (
-                <div className={`mt-2 font-black text-lg ${lastCorrect ? 'text-green-300' : 'text-red-300'}`}>
+                <div className={`mt-2 font-black text-lg ${lastCorrect ? 'text-emerald-500' : 'text-rose-400'}`}>
                   {lastCorrect ? `⭕ ${t('せいかい！', 'Correct!')}` : `❌ ${t('おしい！', 'Try again!')}`}
                 </div>
               )}
@@ -183,12 +183,12 @@ export default function IndianMultiplicationGame({ lang, setLang, onExit }) {
 
             {/* インド式のコツ（11〜19×11〜19、リビール時のみ） */}
             {phase === 'reveal' && showHints && hint && (
-              <div className="bg-violet-900/30 border border-violet-700 rounded-xl px-4 py-3 text-sm">
-                <div className="text-violet-300 font-black mb-1">💡 {t('インド式のコツ', 'Indian trick')}</div>
-                <div className="text-slate-200 leading-relaxed">
-                  ① {q.a} + {hint.ub} = <b className="text-yellow-300">{hint.sum}</b> → ×10 = <b className="text-yellow-300">{hint.tens}</b><br />
-                  ② {hint.ua} × {hint.ub} = <b className="text-yellow-300">{hint.prod}</b><br />
-                  ③ {hint.tens} + {hint.prod} = <b className="text-green-300">{hint.total}</b>
+              <div className="bg-violet-100 border border-violet-200 rounded-xl px-4 py-3 text-sm">
+                <div className="text-violet-500 font-black mb-1">💡 {t('インド式のコツ', 'Indian trick')}</div>
+                <div className="text-slate-600 leading-relaxed">
+                  ① {q.a} + {hint.ub} = <b className="text-violet-600">{hint.sum}</b> → ×10 = <b className="text-violet-600">{hint.tens}</b><br />
+                  ② {hint.ua} × {hint.ub} = <b className="text-violet-600">{hint.prod}</b><br />
+                  ③ {hint.tens} + {hint.prod} = <b className="text-emerald-500">{hint.total}</b>
                 </div>
               </div>
             )}
@@ -198,7 +198,7 @@ export default function IndianMultiplicationGame({ lang, setLang, onExit }) {
             ) : (
               !lastCorrect && (
                 <button onClick={() => goNext(scores)}
-                  className="w-full bg-violet-500 text-white font-black text-lg py-4 rounded-2xl hover:bg-violet-400 active:scale-95 transition cursor-pointer">
+                  className="w-full bg-violet-400 text-white font-black text-lg py-4 rounded-2xl hover:bg-violet-300 active:scale-95 transition cursor-pointer shadow-sm">
                   {qi + 1 < SESSION_Q ? t('つぎへ', 'Next') : t('けっか', 'Result')} →
                 </button>
               )
@@ -220,7 +220,7 @@ function ConfigScreen({ t, subMode, setSubMode, range, setRange, table, setTable
   return (
     <div className="flex flex-col gap-5">
       <div className="text-center">
-        <div className="text-3xl font-black text-violet-400 mb-1">{t('インド式 九九', 'Indian Tables')}</div>
+        <div className="text-3xl font-black text-violet-500 mb-1">{t('インド式 九九', 'Indian Tables')}</div>
         <div className="text-slate-400 text-sm">{t('19×19までスラスラ言えるように練習！', 'Master up to 19 × 19!')}</div>
       </div>
 
@@ -228,12 +228,12 @@ function ConfigScreen({ t, subMode, setSubMode, range, setRange, table, setTable
       <div className="grid grid-cols-2 gap-2">
         <button onClick={() => setSubMode('range')}
           className={`py-3 rounded-xl font-black border-2 transition active:scale-95 cursor-pointer
-            ${subMode === 'range' ? 'bg-violet-600 border-violet-300 text-white' : 'bg-slate-800 border-slate-700 text-slate-300'}`}>
+            ${subMode === 'range' ? 'bg-violet-400 border-violet-300 text-white' : 'bg-white border-slate-200 text-slate-500'}`}>
           {t('ランダム', 'Random')}
         </button>
         <button onClick={() => setSubMode('table')}
           className={`py-3 rounded-xl font-black border-2 transition active:scale-95 cursor-pointer
-            ${subMode === 'table' ? 'bg-violet-600 border-violet-300 text-white' : 'bg-slate-800 border-slate-700 text-slate-300'}`}>
+            ${subMode === 'table' ? 'bg-violet-400 border-violet-300 text-white' : 'bg-white border-slate-200 text-slate-500'}`}>
           {t('段べつ', 'By table')}
         </button>
       </div>
@@ -245,7 +245,7 @@ function ConfigScreen({ t, subMode, setSubMode, range, setRange, table, setTable
             {RANGE_ORDER.map(r => (
               <button key={r} onClick={() => setRange(r)}
                 className={`py-4 rounded-2xl font-black text-sm border-2 transition active:scale-95 cursor-pointer
-                  ${range === r ? 'bg-violet-500 border-violet-300 text-white' : 'bg-slate-800 border-slate-700 text-slate-300 hover:border-violet-400'}`}>
+                  ${range === r ? 'bg-violet-400 border-violet-300 text-white' : 'bg-white border-slate-200 text-slate-500 hover:border-violet-300'}`}>
                 {RANGES[r].label[t('ja', 'en')] || RANGES[r].label.ja}
               </button>
             ))}
@@ -258,26 +258,26 @@ function ConfigScreen({ t, subMode, setSubMode, range, setRange, table, setTable
             {Array.from({ length: 18 }, (_, i) => i + 2).map(n => (
               <button key={n} onClick={() => setTable(n)}
                 className={`py-3 rounded-xl font-black text-sm border-2 transition active:scale-95 cursor-pointer
-                  ${table === n ? 'bg-violet-500 border-violet-300 text-white' : 'bg-slate-800 border-slate-700 text-slate-300'}`}>
+                  ${table === n ? 'bg-violet-400 border-violet-300 text-white' : 'bg-white border-slate-200 text-slate-500'}`}>
                 {n}
               </button>
             ))}
           </div>
-          <div className="text-center text-violet-300 font-black mt-3">{table} {t('の段（× 1〜19）', '× 1–19')}</div>
+          <div className="text-center text-violet-500 font-black mt-3">{table} {t('の段（× 1〜19）', '× 1–19')}</div>
         </div>
       )}
 
       {/* コツ表示のオンオフ */}
       <button onClick={() => setShowHints(h => !h)}
-        className="flex items-center justify-between bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 cursor-pointer active:scale-[0.99] transition">
-        <span className="text-sm font-bold text-slate-200">💡 {t('インド式のコツを表示', 'Show Indian trick')}</span>
-        <span className={`w-11 h-6 rounded-full relative transition-colors ${showHints ? 'bg-violet-500' : 'bg-slate-600'}`}>
-          <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-all ${showHints ? 'left-[22px]' : 'left-0.5'}`} />
+        className="flex items-center justify-between bg-white border border-slate-200 shadow-sm rounded-xl px-4 py-3 cursor-pointer active:scale-[0.99] transition">
+        <span className="text-sm font-bold text-slate-600">💡 {t('インド式のコツを表示', 'Show Indian trick')}</span>
+        <span className={`w-11 h-6 rounded-full relative transition-colors ${showHints ? 'bg-violet-400' : 'bg-slate-300'}`}>
+          <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${showHints ? 'left-[22px]' : 'left-0.5'}`} />
         </span>
       </button>
 
       <button onClick={onStart}
-        className="w-full bg-violet-500 text-white font-black text-xl py-4 rounded-2xl hover:bg-violet-400 active:scale-95 transition cursor-pointer">
+        className="w-full bg-violet-400 text-white font-black text-xl py-4 rounded-2xl hover:bg-violet-300 active:scale-95 transition cursor-pointer shadow-sm">
         {t('スタート', 'Start')}（{SESSION_Q}{t('問', 'Q')}）▶
       </button>
     </div>
@@ -293,16 +293,16 @@ function ResultScreen({ t, questions, scores, elapsed, onRetry, onConfig }) {
   return (
     <div className="flex flex-col items-center gap-5 py-4">
       <div className="text-center">
-        <div className="text-6xl font-black text-violet-300">
-          {correct}<span className="text-3xl text-slate-400">/{SESSION_Q}</span>
+        <div className="text-6xl font-black text-violet-500">
+          {correct}<span className="text-3xl text-slate-300">/{SESSION_Q}</span>
         </div>
         <div className="text-slate-400 mt-1">{pct}% · ⏱ {fmtTime(elapsed)}</div>
       </div>
 
       <div className={`w-full text-center py-4 rounded-2xl text-xl font-black ${
-        pct === 100 ? 'bg-green-700/30 text-green-300 border border-green-600'
-          : pct >= 80 ? 'bg-violet-700/30 text-violet-200 border border-violet-600'
-            : 'bg-slate-800 text-slate-300 border border-slate-700'
+        pct === 100 ? 'bg-emerald-100 text-emerald-600 border border-emerald-200'
+          : pct >= 80 ? 'bg-violet-100 text-violet-600 border border-violet-200'
+            : 'bg-white text-slate-500 border border-slate-200'
       }`}>
         {pct === 100 ? `🎉 ${t('全問せいかい！', 'Perfect!')}`
           : pct >= 80 ? `✨ ${t('あと少し！', 'Almost there!')}`
@@ -310,12 +310,12 @@ function ResultScreen({ t, questions, scores, elapsed, onRetry, onConfig }) {
       </div>
 
       {missed.length > 0 && (
-        <div className="w-full bg-slate-800 rounded-2xl p-4 border border-slate-700">
+        <div className="w-full bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
           <div className="text-xs text-slate-400 mb-2 font-bold">{t('まちがえた問題', 'Missed')}</div>
           <div className="grid grid-cols-2 gap-2">
             {missed.map((m, i) => (
-              <div key={i} className="text-sm bg-slate-900 rounded-lg px-3 py-2 text-slate-200">
-                {m.a} × {m.b} = <b className="text-yellow-300">{m.answer}</b>
+              <div key={i} className="text-sm bg-violet-50 rounded-lg px-3 py-2 text-slate-600">
+                {m.a} × {m.b} = <b className="text-violet-600">{m.answer}</b>
               </div>
             ))}
           </div>
@@ -324,11 +324,11 @@ function ResultScreen({ t, questions, scores, elapsed, onRetry, onConfig }) {
 
       <div className="flex flex-col gap-3 w-full">
         <button onClick={onRetry}
-          className="w-full bg-violet-500 text-white font-black text-lg py-4 rounded-2xl hover:bg-violet-400 active:scale-95 transition cursor-pointer">
+          className="w-full bg-violet-400 text-white font-black text-lg py-4 rounded-2xl hover:bg-violet-300 active:scale-95 transition cursor-pointer shadow-sm">
           {t('もう一回', 'Again')}
         </button>
         <button onClick={onConfig}
-          className="w-full bg-slate-700 text-slate-300 font-bold py-3 rounded-2xl hover:bg-slate-600 active:scale-95 transition cursor-pointer">
+          className="w-full bg-slate-100 text-slate-500 font-bold py-3 rounded-2xl hover:bg-slate-200 active:scale-95 transition cursor-pointer">
           {t('せってい', 'Settings')}
         </button>
       </div>

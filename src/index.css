@@ -17,7 +17,7 @@
 }
 
 body {
-  background: #0f172a;
+  background: #fdf6f0;
   font-family: system-ui, 'Hiragino Sans', 'Meiryo', sans-serif;
   /* テキスト選択防止 */
   -webkit-user-select: none;

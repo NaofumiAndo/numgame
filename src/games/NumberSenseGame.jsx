@@ -569,7 +569,7 @@ export default function NumberSenseGame({ lang, setLang, onExit }) {
     return () => clearTimeout(id)
   }, [flash])
 
-  const bgFlash = flash === 'correct' ? 'bg-green-500/10' : flash === 'wrong' ? 'bg-red-500/10' : ''
+  const bgFlash = flash === 'correct' ? 'bg-emerald-100' : flash === 'wrong' ? 'bg-rose-100' : 'bg-amber-50'
 
   // ヘッダーの戻るボタン：ホーム画面ならアプリ一覧（ハブ）へ、それ以外はゲームのホームへ
   const onBack = () => {
@@ -579,22 +579,22 @@ export default function NumberSenseGame({ lang, setLang, onExit }) {
   }
 
   return (
-    <div className={`min-h-screen bg-slate-900 text-white flex flex-col items-center transition-colors duration-200 select-none ${bgFlash}`}>
+    <div className={`min-h-screen text-slate-700 flex flex-col items-center transition-colors duration-200 select-none ${bgFlash}`}>
       <Confetti active={showConfetti} />
 
       {/* Header */}
-      <header className="w-full max-w-[430px] flex items-center justify-between px-4 py-3 border-b border-slate-700 shrink-0">
+      <header className="w-full max-w-[430px] flex items-center justify-between px-4 py-3 border-b border-amber-100 shrink-0">
         <div className="flex items-center gap-2">
           <button
             onClick={onBack}
-            className="text-slate-400 hover:text-white text-xl leading-none px-1">
+            className="text-slate-400 hover:text-slate-600 text-xl leading-none px-1">
             ←
           </button>
-          <span className="text-yellow-400 font-black text-base">{t.title}</span>
+          <span className="text-amber-500 font-black text-base">{t.title}</span>
         </div>
         <button
           onClick={() => setLang(l => l === 'ja' ? 'en' : 'ja')}
-          className="text-xs border border-slate-600 rounded px-2 py-1 text-slate-300 hover:border-yellow-400 hover:text-yellow-400 transition">
+          className="text-xs border border-slate-300 rounded px-2 py-1 text-slate-500 hover:border-amber-400 hover:text-amber-500 transition">
           {lang === 'ja' ? 'EN' : 'JP'}
         </button>
       </header>
@@ -644,7 +644,7 @@ function HomeScreen({ t, progress, isUnlocked, highestUnlockedLevel, onOpenSecti
   return (
     <div className="flex flex-col gap-4">
       <div className="text-center">
-        <div className="text-3xl font-black text-yellow-400 mb-1">{t.title}</div>
+        <div className="text-3xl font-black text-amber-500 mb-1">{t.title}</div>
         <div className="text-slate-400 text-sm">{t.subtitle}</div>
       </div>
 
@@ -657,17 +657,17 @@ function HomeScreen({ t, progress, isUnlocked, highestUnlockedLevel, onOpenSecti
               onClick={() => onOpenSection(sec)}
               className={`w-full text-left rounded-xl p-3 flex items-center justify-between border transition
                 ${unlocked
-                  ? 'bg-slate-800 border-slate-600 hover:border-yellow-400 active:scale-[0.98] cursor-pointer'
-                  : 'bg-slate-800/30 border-slate-800 cursor-not-allowed'}`}>
+                  ? 'bg-white border-slate-200 shadow-sm hover:border-amber-300 active:scale-[0.98] cursor-pointer'
+                  : 'bg-slate-50 border-slate-100 cursor-not-allowed'}`}>
               <div className="flex items-center gap-3">
                 <span className="text-2xl">{sectionEmoji(sec)}</span>
                 <div>
-                  <div className={`font-bold text-sm ${unlocked ? 'text-white' : 'text-slate-600'}`}>
+                  <div className={`font-bold text-sm ${unlocked ? 'text-slate-700' : 'text-slate-300'}`}>
                     {t.sections[sec]}
                   </div>
                   {unlocked
-                    ? <div className="text-xs text-yellow-400">{t.level} {lv}</div>
-                    : <div className="text-xs text-slate-600">{t.locked}</div>}
+                    ? <div className="text-xs text-amber-500">{t.level} {lv}</div>
+                    : <div className="text-xs text-slate-300">{t.locked}</div>}
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -676,13 +676,13 @@ function HomeScreen({ t, progress, isUnlocked, highestUnlockedLevel, onOpenSecti
                     <div className="flex gap-1">
                       {Array.from({ length: MAX_LEVELS }, (_, i) => (
                         <div key={i}
-                          className={`w-2 h-2 rounded-full ${progress.clearedLevels?.[`${sec}-${i + 1}`] ? 'bg-yellow-400' : 'bg-slate-700'}`} />
+                          className={`w-2 h-2 rounded-full ${progress.clearedLevels?.[`${sec}-${i + 1}`] ? 'bg-amber-400' : 'bg-slate-200'}`} />
                       ))}
                     </div>
-                    <span className="text-slate-500 text-lg leading-none">›</span>
+                    <span className="text-slate-300 text-lg leading-none">›</span>
                   </>
                 ) : (
-                  <span className="text-slate-700">🔒</span>
+                  <span className="text-slate-300">🔒</span>
                 )}
               </div>
             </button>
@@ -691,7 +691,7 @@ function HomeScreen({ t, progress, isUnlocked, highestUnlockedLevel, onOpenSecti
       </div>
 
       <button onClick={() => setScreen('history')}
-        className="w-full bg-slate-700/60 text-slate-300 font-bold py-3 rounded-2xl hover:bg-slate-600 active:scale-95 transition text-sm">
+        className="w-full bg-white border border-slate-200 shadow-sm text-slate-500 font-bold py-3 rounded-2xl hover:bg-slate-50 active:scale-95 transition text-sm">
         {t.history}
       </button>
     </div>
@@ -708,7 +708,7 @@ function SectionScreen({ t, section, progress, isLevelUnlocked, startGame }) {
       <div className="flex items-center gap-3">
         <span className="text-3xl">{sectionEmoji(section)}</span>
         <div>
-          <h2 className="text-xl font-bold text-yellow-400">{t.sections[section]}</h2>
+          <h2 className="text-xl font-bold text-amber-500">{t.sections[section]}</h2>
           <div className="text-xs text-slate-400">{t.tapLevelHint}</div>
         </div>
       </div>
@@ -724,12 +724,12 @@ function SectionScreen({ t, section, progress, isLevelUnlocked, startGame }) {
           if (!cleared && !unlocked) {
             return (
               <div key={lv}
-                className="w-full p-4 rounded-2xl flex items-center justify-between border-2 bg-slate-800/30 border-slate-800 opacity-50">
+                className="w-full p-4 rounded-2xl flex items-center justify-between border-2 bg-slate-50 border-slate-100 opacity-70">
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl font-black text-slate-600 w-7 text-center">{lv}</span>
-                  <span className="text-sm text-slate-600">{t.locked}</span>
+                  <span className="text-2xl font-black text-slate-300 w-7 text-center">{lv}</span>
+                  <span className="text-sm text-slate-400">{t.locked}</span>
                 </div>
-                <span className="text-slate-700">🔒</span>
+                <span className="text-slate-300">🔒</span>
               </div>
             )
           }
@@ -745,20 +745,20 @@ function SectionScreen({ t, section, progress, isLevelUnlocked, startGame }) {
             <button key={lv} onClick={onClick}
               className={`w-full p-4 rounded-2xl flex items-center justify-between border-2 transition active:scale-95 cursor-pointer
                 ${cleared
-                  ? 'bg-green-900/20 border-green-700 hover:border-green-400'
-                  : 'bg-blue-600/15 border-blue-500 hover:border-blue-300'}`}>
+                  ? 'bg-emerald-50 border-emerald-300 hover:border-emerald-400'
+                  : 'bg-sky-50 border-sky-300 hover:border-sky-400'}`}>
               <div className="flex items-center gap-3">
-                <span className={`text-2xl font-black w-7 text-center ${cleared ? 'text-green-300' : 'text-blue-300'}`}>{lv}</span>
+                <span className={`text-2xl font-black w-7 text-center ${cleared ? 'text-emerald-500' : 'text-sky-500'}`}>{lv}</span>
                 <div className="text-left">
-                  <div className={`font-bold text-sm ${cleared ? 'text-green-300' : 'text-blue-200'}`}>
+                  <div className={`font-bold text-sm ${cleared ? 'text-emerald-600' : 'text-sky-600'}`}>
                     {cleared ? t.modeLabel.practice : frontierLabel}
                   </div>
                   <div className="text-xs text-slate-400">{timeText}</div>
                 </div>
               </div>
               {cleared
-                ? <span className="text-green-400 text-xs font-bold">{t.clearedTag} ✓</span>
-                : <span className="text-blue-300 text-lg">▶</span>}
+                ? <span className="text-emerald-500 text-xs font-bold">{t.clearedTag} ✓</span>
+                : <span className="text-sky-500 text-lg">▶</span>}
             </button>
           )
         })}
@@ -769,20 +769,20 @@ function SectionScreen({ t, section, progress, isLevelUnlocked, startGame }) {
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-6"
           onClick={() => setPendingTest(null)}>
           <div onClick={e => e.stopPropagation()}
-            className="bg-slate-800 border border-slate-600 rounded-2xl p-6 w-full max-w-[320px] text-center flex flex-col gap-4">
-            <div className="text-lg font-black text-white">{t.sections[section]} {t.level} {pendingTest.level}</div>
+            className="bg-white border border-slate-200 shadow-xl rounded-2xl p-6 w-full max-w-[320px] text-center flex flex-col gap-4">
+            <div className="text-lg font-black text-slate-700">{t.sections[section]} {t.level} {pendingTest.level}</div>
 
             {pendingTest.choice ? (
               // Lv.1：練習か昇格試験を選ぶ
               <>
-                <div className="text-slate-300 text-sm">{t.chooseMode}</div>
+                <div className="text-slate-500 text-sm">{t.chooseMode}</div>
                 <div className="flex flex-col gap-3">
                   <button onClick={() => {
                       const lv = pendingTest.level
                       setPendingTest(null)
                       startGame({ section, level: lv, mode: 'practice' })
                     }}
-                    className="w-full py-3 rounded-xl font-black bg-yellow-400 text-slate-900 hover:bg-yellow-300 active:scale-95 transition cursor-pointer">
+                    className="w-full py-3 rounded-xl font-black bg-amber-400 text-white hover:bg-amber-300 active:scale-95 transition cursor-pointer">
                     {t.doPractice}
                   </button>
                   <button onClick={() => {
@@ -790,11 +790,11 @@ function SectionScreen({ t, section, progress, isLevelUnlocked, startGame }) {
                       setPendingTest(null)
                       startGame({ section, level: lv, mode: 'test' })
                     }}
-                    className="w-full py-3 rounded-xl font-black bg-blue-600 text-white hover:bg-blue-500 active:scale-95 transition cursor-pointer">
+                    className="w-full py-3 rounded-xl font-black bg-sky-400 text-white hover:bg-sky-300 active:scale-95 transition cursor-pointer">
                     {t.promoTag}
                   </button>
                 </div>
-                <div className="text-[11px] text-amber-300/80">⚠️ {t.testFailNote}</div>
+                <div className="text-[11px] text-amber-600">⚠️ {t.testFailNote}</div>
                 <button onClick={() => setPendingTest(null)}
                   className="text-slate-400 text-sm font-bold active:scale-95 transition cursor-pointer">
                   {t.cancelTest}
@@ -803,13 +803,13 @@ function SectionScreen({ t, section, progress, isLevelUnlocked, startGame }) {
             ) : (
               // Lv.2 以降：昇格試験の確認のみ
               <>
-                <div className="text-blue-300 font-bold">{t.promotionTestQ}</div>
-                <div className="text-xs text-amber-300/90 bg-amber-900/20 border border-amber-800/40 rounded-lg px-3 py-2">
+                <div className="text-sky-500 font-bold">{t.promotionTestQ}</div>
+                <div className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
                   ⚠️ {t.testFailNote}
                 </div>
                 <div className="flex gap-3">
                   <button onClick={() => setPendingTest(null)}
-                    className="flex-1 py-3 rounded-xl font-bold bg-slate-700 text-slate-300 active:scale-95 transition cursor-pointer">
+                    className="flex-1 py-3 rounded-xl font-bold bg-slate-100 text-slate-500 active:scale-95 transition cursor-pointer">
                     {t.cancelTest}
                   </button>
                   <button onClick={() => {
@@ -817,7 +817,7 @@ function SectionScreen({ t, section, progress, isLevelUnlocked, startGame }) {
                       setPendingTest(null)
                       startGame({ section, level: lv, mode: 'test' })
                     }}
-                    className="flex-1 py-3 rounded-xl font-black bg-blue-600 text-white hover:bg-blue-500 active:scale-95 transition cursor-pointer">
+                    className="flex-1 py-3 rounded-xl font-black bg-sky-400 text-white hover:bg-sky-300 active:scale-95 transition cursor-pointer">
                     {t.beginTest}
                   </button>
                 </div>
@@ -852,8 +852,8 @@ function GameScreen({ t, lang, q, qIndex, timeLeft, totalTime, phase, reveal,
           {Array.from({ length: QUESTIONS_PER_SESSION }, (_, i) => (
             <div key={i} className={`h-2 flex-1 rounded-full ${
               i < sessionScores.length
-                ? (sessionScores[i] ? 'bg-green-400' : 'bg-red-400')
-                : i === qIndex ? 'bg-yellow-400' : 'bg-slate-700'
+                ? (sessionScores[i] ? 'bg-emerald-300' : 'bg-rose-300')
+                : i === qIndex ? 'bg-amber-400' : 'bg-slate-200'
             }`} />
           ))}
         </div>
@@ -861,32 +861,32 @@ function GameScreen({ t, lang, q, qIndex, timeLeft, totalTime, phase, reveal,
       </div>
 
       {/* 四捨五入ルールの明示 */}
-      <div className="bg-yellow-400 border-2 border-yellow-300 rounded-xl px-3 py-3 text-center shadow-lg shadow-yellow-400/20">
-        <div className="text-slate-900 font-black text-xl leading-tight">📐 {t.roundRule}</div>
-        <div className="text-slate-800 font-bold text-xs mt-1">{t.roundHint}</div>
+      <div className="bg-amber-100 border-2 border-amber-200 rounded-xl px-3 py-3 text-center shadow-sm">
+        <div className="text-amber-700 font-black text-xl leading-tight">📐 {t.roundRule}</div>
+        <div className="text-amber-600 font-bold text-xs mt-1">{t.roundHint}</div>
       </div>
 
       <CircleTimer timeLeft={timeLeft} totalTime={totalTime} />
 
       {/* Question display */}
-      <div className="bg-slate-800 rounded-2xl p-5 text-center border border-slate-700 min-h-[90px] flex flex-col items-center justify-center">
+      <div className="bg-white rounded-2xl p-5 text-center border border-slate-200 shadow-sm min-h-[90px] flex flex-col items-center justify-center">
         {phase === 'question' ? (
-          <div className={`font-black text-white leading-tight ${isArith ? 'text-2xl' : (q.kind === 'unitnum' ? 'text-3xl' : 'text-4xl')}`}>
+          <div className={`font-black text-slate-700 leading-tight ${isArith ? 'text-2xl' : (q.kind === 'unitnum' ? 'text-3xl' : 'text-4xl')}`}>
             {displayNumber}
           </div>
         ) : (
           <div>
             {isArith && (
               <>
-                <div className="text-base text-slate-300">{q.display}</div>
-                <div className="text-sm text-slate-500 mt-1">= {fmt(q.result)}</div>
+                <div className="text-base text-slate-500">{q.display}</div>
+                <div className="text-sm text-slate-400 mt-1">= {fmt(q.result)}</div>
               </>
             )}
             {!isArith && (
-              <div className="text-3xl font-black text-white">{displayNumber}</div>
+              <div className="text-3xl font-black text-slate-700">{displayNumber}</div>
             )}
             <div className="text-xs text-slate-400 mt-2">{t.answer}</div>
-            <div className="text-4xl font-black text-yellow-300">{correctLabel}</div>
+            <div className="text-4xl font-black text-amber-500">{correctLabel}</div>
           </div>
         )}
       </div>
@@ -894,14 +894,14 @@ function GameScreen({ t, lang, q, qIndex, timeLeft, totalTime, phase, reveal,
       {phase === 'question' ? (
         <>
           {/* 入力ディスプレイ */}
-          <div className="bg-slate-900 border-2 border-slate-600 rounded-xl px-4 py-3 min-h-[56px] flex items-center justify-center">
+          <div className="bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3 min-h-[56px] flex items-center justify-center">
             {inputNum ? (
-              <span className="text-3xl font-black text-white">
+              <span className="text-3xl font-black text-slate-700">
                 {fmt(parseInt(inputNum, 10))}
-                <span className="text-yellow-400">{lang === 'ja' ? inputUnit : (inputUnit && ` ${inputUnit}`)}</span>
+                <span className="text-amber-500">{lang === 'ja' ? inputUnit : (inputUnit && ` ${inputUnit}`)}</span>
               </span>
             ) : (
-              <span className="text-slate-600 text-sm">{t.inputPlaceholder}</span>
+              <span className="text-slate-400 text-sm">{t.inputPlaceholder}</span>
             )}
           </div>
 
@@ -911,21 +911,21 @@ function GameScreen({ t, lang, q, qIndex, timeLeft, totalTime, phase, reveal,
               {['1','2','3','4','5','6','7','8','9'].map(d => (
                 <button key={d} onClick={() => onDigit(d)}
                   disabled={!!inputUnit}
-                  className="bg-slate-700 active:bg-slate-500 disabled:opacity-30 rounded-xl py-3 text-2xl font-black text-white transition-transform active:scale-95 cursor-pointer">
+                  className="bg-white border border-slate-200 shadow-sm active:bg-slate-100 disabled:opacity-30 rounded-xl py-3 text-2xl font-black text-slate-700 transition-transform active:scale-95 cursor-pointer">
                   {d}
                 </button>
               ))}
               <button onClick={onClear}
-                className="bg-slate-800 active:bg-slate-600 rounded-xl py-3 text-sm font-bold text-slate-300 transition-transform active:scale-95 cursor-pointer">
+                className="bg-slate-100 active:bg-slate-200 rounded-xl py-3 text-sm font-bold text-slate-500 transition-transform active:scale-95 cursor-pointer">
                 {t.clear}
               </button>
               <button onClick={() => onDigit('0')}
                 disabled={!!inputUnit}
-                className="bg-slate-700 active:bg-slate-500 disabled:opacity-30 rounded-xl py-3 text-2xl font-black text-white transition-transform active:scale-95 cursor-pointer">
+                className="bg-white border border-slate-200 shadow-sm active:bg-slate-100 disabled:opacity-30 rounded-xl py-3 text-2xl font-black text-slate-700 transition-transform active:scale-95 cursor-pointer">
                 0
               </button>
               <button onClick={onDelete}
-                className="bg-slate-800 active:bg-slate-600 rounded-xl py-3 text-xl font-bold text-slate-300 transition-transform active:scale-95 cursor-pointer">
+                className="bg-slate-100 active:bg-slate-200 rounded-xl py-3 text-xl font-bold text-slate-500 transition-transform active:scale-95 cursor-pointer">
                 ←
               </button>
             </div>
@@ -935,7 +935,7 @@ function GameScreen({ t, lang, q, qIndex, timeLeft, totalTime, phase, reveal,
                   disabled={!inputNum}
                   className={`flex-1 rounded-xl font-black leading-tight transition-transform active:scale-95 cursor-pointer disabled:opacity-30
                     ${lang === 'ja' ? 'text-2xl' : 'text-xs'}
-                    bg-blue-700 active:bg-blue-500 text-white`}>
+                    bg-sky-400 active:bg-sky-300 text-white`}>
                   {u.label}
                 </button>
               ))}
@@ -947,44 +947,44 @@ function GameScreen({ t, lang, q, qIndex, timeLeft, totalTime, phase, reveal,
           {/* 判定バッジ */}
           <div className={`text-center text-xl font-black py-3 rounded-xl border ${
             isTimeout
-              ? 'bg-orange-900/50 text-orange-300 border-orange-700'
+              ? 'bg-orange-100 text-orange-600 border-orange-200'
               : isCorrect
-                ? 'bg-green-900/50 text-green-300 border-green-700'
-                : 'bg-red-900/50 text-red-300 border-red-700'
+                ? 'bg-emerald-100 text-emerald-600 border-emerald-200'
+                : 'bg-rose-100 text-rose-500 border-rose-200'
           }`}>
             {isTimeout ? `⏱ ${t.timeout}` : isCorrect ? `✓ ${t.correct}` : `✗ ${t.wrong}`}
           </div>
 
           {/* あなたの回答 vs 正解（時間切れでも正解を表示する） */}
           <div className="flex items-stretch gap-2 text-center">
-            <div className="flex-1 bg-slate-800 rounded-xl py-3 border border-slate-700">
-              <div className="text-xs text-slate-500">{t.yourAnswer}</div>
-              <div className={`text-2xl font-black ${isCorrect ? 'text-green-300' : 'text-red-300'}`}>
+            <div className="flex-1 bg-white rounded-xl py-3 border border-slate-200 shadow-sm">
+              <div className="text-xs text-slate-400">{t.yourAnswer}</div>
+              <div className={`text-2xl font-black ${isCorrect ? 'text-emerald-500' : 'text-rose-400'}`}>
                 {reveal?.value != null ? labelFromValue(reveal.value, lang).label : '—'}
               </div>
             </div>
-            <div className="flex-1 bg-slate-800 rounded-xl py-3 border border-green-700">
-              <div className="text-xs text-slate-500">{t.answer}</div>
-              <div className="text-2xl font-black text-yellow-300">{correctLabel}</div>
+            <div className="flex-1 bg-emerald-50 rounded-xl py-3 border border-emerald-200">
+              <div className="text-xs text-slate-400">{t.answer}</div>
+              <div className="text-2xl font-black text-amber-500">{correctLabel}</div>
             </div>
           </div>
 
           {testFailed ? (
             <>
               {/* 昇格テストは1問でも不正解で終了 → その場でやり直し / ホームへ */}
-              <div className="text-center text-sm text-red-300 font-bold">{t.testFailNote}</div>
+              <div className="text-center text-sm text-rose-400 font-bold">{t.testFailNote}</div>
               <button onClick={onFailRetry}
-                className="w-full bg-yellow-400 text-slate-900 font-black text-lg py-4 rounded-2xl active:scale-95 transition cursor-pointer">
+                className="w-full bg-amber-400 text-white font-black text-lg py-4 rounded-2xl active:scale-95 transition cursor-pointer shadow-sm">
                 {t.retry}
               </button>
               <button onClick={onFailHome}
-                className="w-full bg-slate-700 text-slate-300 font-bold py-3 rounded-2xl active:scale-95 transition cursor-pointer">
+                className="w-full bg-slate-100 text-slate-500 font-bold py-3 rounded-2xl active:scale-95 transition cursor-pointer">
                 {t.home}
               </button>
             </>
           ) : (
             <button onClick={onNext}
-              className="w-full bg-yellow-400 text-slate-900 font-black text-lg py-4 rounded-2xl active:scale-95 transition cursor-pointer">
+              className="w-full bg-amber-400 text-white font-black text-lg py-4 rounded-2xl active:scale-95 transition cursor-pointer shadow-sm">
               {qIndex + 1 < QUESTIONS_PER_SESSION ? t.next : `${t.score} →`}
             </button>
           )}
@@ -1003,12 +1003,12 @@ function ResultScreen({ t, sessionScores, gameConfig, setScreen, onRetry }) {
   return (
     <div className="flex flex-col items-center gap-6 py-4">
       <div className="text-center">
-        <div className="text-7xl font-black text-yellow-400">
+        <div className="text-7xl font-black text-amber-500">
           {correct}
-          <span className="text-3xl text-slate-400">/{total}</span>
+          <span className="text-3xl text-slate-300">/{total}</span>
         </div>
         <div className="text-slate-400 mt-1">{Math.round((correct / Math.max(1, total)) * 100)}%</div>
-        <div className="text-sm text-slate-500 mt-1">
+        <div className="text-sm text-slate-400 mt-1">
           {t.sections[gameConfig.section]} · {t.level} {gameConfig.level}
         </div>
       </div>
@@ -1016,8 +1016,8 @@ function ResultScreen({ t, sessionScores, gameConfig, setScreen, onRetry }) {
       {gameConfig.mode === 'test' && (
         <div className={`w-full text-center py-5 rounded-2xl text-2xl font-black ${
           passed
-            ? 'bg-green-700/30 text-green-300 border border-green-600'
-            : 'bg-slate-800 text-slate-400 border border-slate-700'
+            ? 'bg-emerald-100 text-emerald-600 border border-emerald-200'
+            : 'bg-white text-slate-400 border border-slate-200'
         }`}>
           {passed ? `🎉 ${t.promoted}` : t.fail}
         </div>
@@ -1028,7 +1028,7 @@ function ResultScreen({ t, sessionScores, gameConfig, setScreen, onRetry }) {
         {sessionScores.map((s, i) => (
           <div key={i}
             className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold ${
-              s ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+              s ? 'bg-emerald-400 text-white' : 'bg-rose-400 text-white'
             }`}>
             {i + 1}
           </div>
@@ -1037,11 +1037,11 @@ function ResultScreen({ t, sessionScores, gameConfig, setScreen, onRetry }) {
 
       <div className="flex flex-col gap-3 w-full">
         <button onClick={onRetry}
-          className="w-full bg-yellow-400 text-slate-900 font-black text-lg py-4 rounded-2xl hover:bg-yellow-300 active:scale-95 transition">
+          className="w-full bg-amber-400 text-white font-black text-lg py-4 rounded-2xl hover:bg-amber-300 active:scale-95 transition shadow-sm">
           {t.retry}
         </button>
         <button onClick={() => setScreen('home')}
-          className="w-full bg-slate-700 text-slate-300 font-bold py-3 rounded-2xl hover:bg-slate-600 active:scale-95 transition">
+          className="w-full bg-slate-100 text-slate-500 font-bold py-3 rounded-2xl hover:bg-slate-200 active:scale-95 transition">
           {t.home}
         </button>
       </div>
@@ -1062,24 +1062,24 @@ function HistoryScreen({ t, lang, progress }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <h2 className="text-xl font-bold text-slate-200">{t.history}</h2>
+      <h2 className="text-xl font-bold text-slate-700">{t.history}</h2>
 
       {/* Accuracy chart */}
-      <div className="bg-slate-800 rounded-2xl p-4 border border-slate-700">
+      <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
         <div className="text-sm text-slate-400 mb-3">{t.accuracy}</div>
         {SECTIONS.filter(s => sectionStats[s] !== null).length === 0 ? (
-          <div className="text-slate-500 text-sm">{t.noHistory}</div>
+          <div className="text-slate-400 text-sm">{t.noHistory}</div>
         ) : (
           SECTIONS.map(sec => sectionStats[sec] !== null && (
             <div key={sec} className="flex items-center gap-2 mb-2">
-              <span className="text-sm w-20 text-slate-300 shrink-0">{t.sections[sec]}</span>
-              <div className="flex-1 bg-slate-700 rounded-full h-3">
+              <span className="text-sm w-20 text-slate-600 shrink-0">{t.sections[sec]}</span>
+              <div className="flex-1 bg-slate-200 rounded-full h-3">
                 <div
-                  className="bg-yellow-400 h-3 rounded-full transition-all"
+                  className="bg-amber-400 h-3 rounded-full transition-all"
                   style={{ width: `${sectionStats[sec]}%` }}
                 />
               </div>
-              <span className="text-xs text-yellow-400 w-8 text-right">{sectionStats[sec]}%</span>
+              <span className="text-xs text-amber-500 w-8 text-right">{sectionStats[sec]}%</span>
             </div>
           ))
         )}
@@ -1088,22 +1088,22 @@ function HistoryScreen({ t, lang, progress }) {
       {/* Score list */}
       <div className="flex flex-col gap-2">
         {scores.length === 0 && (
-          <div className="text-slate-500 text-sm text-center mt-4">{t.noHistory}</div>
+          <div className="text-slate-400 text-sm text-center mt-4">{t.noHistory}</div>
         )}
         {scores.slice(0, 50).map((s, i) => (
-          <div key={i} className="bg-slate-800 rounded-xl p-3 flex items-center justify-between border border-slate-700">
+          <div key={i} className="bg-white rounded-xl p-3 flex items-center justify-between border border-slate-200 shadow-sm">
             <div>
-              <div className="text-sm font-bold text-white">{t.sections[s.section]} · {t.level} {s.level}</div>
-              <div className="text-xs text-slate-500">
+              <div className="text-sm font-bold text-slate-700">{t.sections[s.section]} · {t.level} {s.level}</div>
+              <div className="text-xs text-slate-400">
                 {t.modeLabel[s.mode]} · {new Date(s.date).toLocaleDateString(lang === 'ja' ? 'ja-JP' : 'en-US')}
               </div>
             </div>
             <div className="text-right">
-              <div className={`font-black text-lg ${s.score === s.total ? 'text-green-400' : 'text-slate-300'}`}>
+              <div className={`font-black text-lg ${s.score === s.total ? 'text-emerald-500' : 'text-slate-500'}`}>
                 {s.score}/{s.total}
               </div>
               {s.mode === 'test' && (
-                <div className={`text-xs ${s.passed ? 'text-green-400' : 'text-red-400'}`}>
+                <div className={`text-xs ${s.passed ? 'text-emerald-500' : 'text-rose-400'}`}>
                   {s.passed ? t.pass : t.fail}
                 </div>
               )}
