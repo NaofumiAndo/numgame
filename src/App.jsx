@@ -52,7 +52,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-emerald-50 text-slate-700 flex flex-col items-center select-none">
       <header className="w-full max-w-[430px] flex items-center justify-between px-4 py-3 border-b border-emerald-100 shrink-0">
-        <span className="text-emerald-500 font-black text-base">🎈 {t('すうじであそぼ', 'Number Play')}</span>
+        <span className="text-emerald-500 font-black text-base">🎈 {t('すうじであそぼ', 'Numo')}</span>
         <button onClick={() => setLang(l => (l === 'ja' ? 'en' : 'ja'))}
           className="text-xs border border-slate-300 rounded px-2 py-1 text-slate-500 hover:border-emerald-400 hover:text-emerald-500 transition">
           {lang === 'ja' ? 'EN' : 'JP'}
@@ -61,7 +61,7 @@ export default function App() {
 
       <main className="w-full max-w-[430px] flex-1 flex flex-col px-4 py-5 gap-5 overflow-y-auto">
         <div className="text-center">
-          <div className="text-3xl font-black text-emerald-500 mb-1">{t('すうじであそぼ', 'Number Play')}</div>
+          <div className="text-3xl font-black text-emerald-500 mb-1">{t('すうじであそぼ', 'Numo')}</div>
           <div className="text-slate-400 text-sm">{t('あそびながら かしこくなろう！', 'Learn while you play!')}</div>
         </div>
 

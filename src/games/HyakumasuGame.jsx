@@ -171,16 +171,16 @@ export default function HyakumasuGame({ lang, setLang, onExit }) {
         </button>
       </header>
 
-      <main className="w-full max-w-[430px] flex-1 flex flex-col px-4 py-4 overflow-y-auto">
+      <main className="w-full max-w-[430px] flex-1 min-h-0 flex flex-col px-4 py-3 overflow-y-auto">
         {screen === 'config' && (
           <ConfigScreen t={t} op={op} setOp={setOp} versus={versus} setVersus={setVersus}
             best={best} onStart={startGame} />
         )}
 
         {screen === 'play' && ready && (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2 flex-1 min-h-0">
             {/* ステータスバー */}
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center justify-between text-sm shrink-0">
               <div className="flex items-center gap-2">
                 {versus && (
                   <span className={`px-2 py-1 rounded-lg font-black text-white ${player === 1 ? 'bg-sky-400' : 'bg-pink-400'}`}>
@@ -190,30 +190,34 @@ export default function HyakumasuGame({ lang, setLang, onExit }) {
                 <span className="text-slate-400">{t('ミス', 'Miss')} <b className="text-rose-400">{mistakes}</b></span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-2xl font-black text-orange-500 tabular-nums">⏱ {fmtTime(elapsed)}</span>
+                <span className="text-xl font-black text-orange-500 tabular-nums">⏱ {fmtTime(elapsed)}</span>
               </div>
             </div>
 
             {/* 進捗バー */}
-            <div className="h-2 w-full bg-orange-100 rounded-full overflow-hidden">
+            <div className="h-1.5 w-full bg-orange-100 rounded-full overflow-hidden shrink-0">
               <div className="h-full bg-orange-400 transition-all" style={{ width: `${(index / CELLS) * 100}%` }} />
             </div>
 
             {/* 大きな出題カード */}
-            <div className="bg-white border-2 border-orange-200 rounded-2xl py-5 text-center shadow-sm">
-              <div className="text-5xl font-black text-slate-700 tracking-wide">
+            <div className="bg-white border-2 border-orange-200 rounded-2xl py-2.5 text-center shadow-sm shrink-0">
+              <div className="text-4xl font-black text-slate-700 tracking-wide">
                 {curA} <span className="text-orange-400">{sym}</span> {curB}
                 <span className="text-slate-300"> = </span>
                 <span className="text-amber-500">{input || '?'}</span>
               </div>
-              <div className="text-xs text-slate-400 mt-1">{index + 1} / {CELLS} マス目</div>
+              <div className="text-[11px] text-slate-400">{index + 1} / {CELLS} マス目</div>
             </div>
 
-            {/* 百マス盤面（いま解いているマスと見出しが光る） */}
-            <HyakumasuGrid rowH={rowH} colH={colH} answers={answers} index={index} sym={sym} />
+            {/* 百マス盤面（残りの縦スペースに収まるよう自動で縮小） */}
+            <div className="flex-1 min-h-0 flex items-center justify-center">
+              <HyakumasuGrid rowH={rowH} colH={colH} answers={answers} index={index} sym={sym} />
+            </div>
 
             {/* テンキー */}
-            <NumPad onDigit={handleDigit} onDelete={() => setInput(s => s.slice(0, -1))} onClear={() => setInput('')} />
+            <div className="shrink-0">
+              <NumPad onDigit={handleDigit} onDelete={() => setInput(s => s.slice(0, -1))} onClear={() => setInput('')} />
+            </div>
           </div>
         )}
 
@@ -236,7 +240,7 @@ function HyakumasuGrid({ rowH, colH, answers, index, sym }) {
   const curR = Math.floor(index / SIZE)
   const curC = index % SIZE
   return (
-    <div className="grid gap-[2px] mx-auto w-full" style={{ gridTemplateColumns: `repeat(${SIZE + 1}, minmax(0, 1fr))` }}>
+    <div className="grid gap-[2px] mx-auto aspect-square h-full max-h-full max-w-full" style={{ gridTemplateColumns: `repeat(${SIZE + 1}, minmax(0, 1fr))` }}>
       {/* 左上の角（演算記号） */}
       <div className="aspect-square flex items-center justify-center rounded-[3px] bg-orange-200 text-orange-700 font-black text-xs">{sym}</div>
       {/* 上端の列見出し */}
