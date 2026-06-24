@@ -73,7 +73,7 @@ const i18n = {
   },
   en: {
     title: 'Number Sense Trainer',
-    subtitle: 'Read 万・億・兆 instantly',
+    subtitle: 'Read millions, billions & trillions instantly',
     start: 'Start',
     practice: 'Practice Mode',
     test: 'Promotion Test',
