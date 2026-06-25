@@ -64,7 +64,7 @@ export function Confetti({ active }) {
 // ── NumPad：0-9 とクリア・削除のテンキー（共通） ────────────────────────────────
 // compact=true で縦に薄いスリム表示（画面に収めたい百マス計算などで使用）
 export function NumPad({ onDigit, onDelete, onClear, clearLabel = 'C', compact = false }) {
-  const gap = compact ? 'gap-1.5' : 'gap-2'
+  const gap = compact ? 'gap-1' : 'gap-2'
   const numCls = compact
     ? 'bg-white border border-slate-200 shadow-sm active:bg-slate-100 rounded-xl py-1.5 text-xl font-black text-slate-700 transition-transform active:scale-95 cursor-pointer'
     : 'bg-white border border-slate-200 shadow-sm active:bg-slate-100 rounded-xl py-3 text-2xl font-black text-slate-700 transition-transform active:scale-95 cursor-pointer'

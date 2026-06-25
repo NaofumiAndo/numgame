@@ -160,7 +160,7 @@ export default function HyakumasuGame({ lang, setLang, onExit }) {
     <div className={`min-h-screen text-slate-700 flex flex-col items-center select-none transition-colors ${wrongFlash ? 'bg-rose-100' : 'bg-orange-50'}`}>
       <Confetti active={confetti} />
 
-      <header className="w-full max-w-[430px] flex items-center justify-between px-4 py-3 border-b border-orange-100 shrink-0">
+      <header className="w-full max-w-[430px] flex items-center justify-between px-4 py-2 border-b border-orange-100 shrink-0">
         <div className="flex items-center gap-2">
           <button onClick={onBack} className="text-slate-400 hover:text-slate-600 text-xl leading-none px-1">←</button>
           <span className="text-orange-500 font-black text-base">{t('百マス計算', 'Hundred Squares')}</span>
@@ -171,7 +171,7 @@ export default function HyakumasuGame({ lang, setLang, onExit }) {
         </button>
       </header>
 
-      <main className="w-full max-w-[430px] flex-1 min-h-0 flex flex-col px-4 py-3 overflow-y-auto">
+      <main className="w-full max-w-[430px] flex-1 min-h-0 flex flex-col px-4 py-2 overflow-y-auto">
         {screen === 'config' && (
           <ConfigScreen t={t} op={op} setOp={setOp} versus={versus} setVersus={setVersus}
             best={best} onStart={startGame} />
@@ -179,43 +179,36 @@ export default function HyakumasuGame({ lang, setLang, onExit }) {
 
         {screen === 'play' && ready && (
           <div className="flex flex-col gap-1.5 flex-1 min-h-0">
-            {/* ステータスバー */}
-            <div className="flex items-center justify-between text-sm shrink-0">
-              <div className="flex items-center gap-2">
-                {versus && (
-                  <span className={`px-2 py-1 rounded-lg font-black text-white ${player === 1 ? 'bg-sky-400' : 'bg-pink-400'}`}>
-                    {t('プレイヤー', 'Player')}{player}
-                  </span>
-                )}
-                <span className="text-slate-400">{t('ミス', 'Miss')} <b className="text-rose-400">{mistakes}</b></span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xl font-black text-orange-500 tabular-nums">⏱ {fmtTime(elapsed)}</span>
-              </div>
-            </div>
-
-            {/* 進捗バー */}
-            <div className="h-1.5 w-full bg-orange-100 rounded-full overflow-hidden shrink-0">
-              <div className="h-full bg-orange-400 transition-all" style={{ width: `${(index / CELLS) * 100}%` }} />
-            </div>
-
-            {/* 大きな出題カード */}
-            <div className="bg-white border-2 border-orange-200 rounded-2xl py-2 text-center shadow-sm shrink-0">
-              <div className="text-3xl font-black text-slate-700 tracking-wide leading-tight">
+            {/* 出題（大きく1行）＋タイマー */}
+            <div className="flex items-center justify-between gap-2 shrink-0">
+              <div className="text-4xl font-black text-slate-700 tracking-wide leading-none">
                 {curA} <span className="text-orange-400">{sym}</span> {curB}
                 <span className="text-slate-300"> = </span>
                 <span className="text-amber-500">{input || '?'}</span>
               </div>
-              <div className="text-[10px] text-slate-400">{index + 1} / {CELLS} マス目</div>
+              <span className="text-lg font-black text-orange-500 tabular-nums shrink-0">⏱{fmtTime(elapsed)}</span>
             </div>
 
-            {/* 百マス盤面（残りの縦スペースに収まるよう自動で縮小） */}
-            <div className="flex-1 min-h-0 flex items-center justify-center">
-              <HyakumasuGrid rowH={rowH} colH={colH} answers={answers} index={index} sym={sym} />
+            {/* 進捗バー＋ミス・残りマス（細い1行） */}
+            <div className="flex items-center gap-2 shrink-0">
+              {versus && (
+                <span className={`px-1.5 py-0.5 rounded-md text-xs font-black text-white shrink-0 ${player === 1 ? 'bg-sky-400' : 'bg-pink-400'}`}>
+                  P{player}
+                </span>
+              )}
+              <div className="h-2 flex-1 bg-orange-100 rounded-full overflow-hidden">
+                <div className="h-full bg-orange-400 transition-all" style={{ width: `${(index / CELLS) * 100}%` }} />
+              </div>
+              <span className="text-xs text-slate-400 tabular-nums shrink-0">
+                {index + 1}/{CELLS}・{t('ミス', 'Miss')} <b className="text-rose-400">{mistakes}</b>
+              </span>
             </div>
+
+            {/* 百マス盤面（フル幅で大きく） */}
+            <HyakumasuGrid rowH={rowH} colH={colH} answers={answers} index={index} sym={sym} />
 
             {/* テンキー（スリム表示で画面に収める） */}
-            <div className="shrink-0">
+            <div className="mt-auto shrink-0">
               <NumPad compact onDigit={handleDigit} onDelete={() => setInput(s => s.slice(0, -1))} onClear={() => setInput('')} />
             </div>
           </div>
@@ -240,7 +233,7 @@ function HyakumasuGrid({ rowH, colH, answers, index, sym }) {
   const curR = Math.floor(index / SIZE)
   const curC = index % SIZE
   return (
-    <div className="grid gap-[2px] mx-auto aspect-square h-full max-h-full max-w-full" style={{ gridTemplateColumns: `repeat(${SIZE + 1}, minmax(0, 1fr))` }}>
+    <div className="grid gap-[2px] mx-auto w-full" style={{ gridTemplateColumns: `repeat(${SIZE + 1}, minmax(0, 1fr))` }}>
       {/* 左上の角（演算記号） */}
       <div className="aspect-square flex items-center justify-center rounded-[3px] bg-orange-200 text-orange-700 font-black text-xs">{sym}</div>
       {/* 上端の列見出し */}
