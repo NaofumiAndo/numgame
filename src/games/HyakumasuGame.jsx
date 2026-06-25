@@ -207,9 +207,9 @@ export default function HyakumasuGame({ lang, setLang, onExit }) {
             {/* 百マス盤面（フル幅で大きく） */}
             <HyakumasuGrid rowH={rowH} colH={colH} answers={answers} index={index} sym={sym} />
 
-            {/* テンキー（スリム表示で画面に収める） */}
-            <div className="mt-auto shrink-0">
-              <NumPad compact onDigit={handleDigit} onDelete={() => setInput(s => s.slice(0, -1))} onClear={() => setInput('')} />
+            {/* テンキー（盤面のすぐ下に配置） */}
+            <div className="shrink-0">
+              <NumPad onDigit={handleDigit} onDelete={() => setInput(s => s.slice(0, -1))} onClear={() => setInput('')} />
             </div>
           </div>
         )}
