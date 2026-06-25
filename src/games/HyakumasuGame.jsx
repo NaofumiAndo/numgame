@@ -178,7 +178,7 @@ export default function HyakumasuGame({ lang, setLang, onExit }) {
         )}
 
         {screen === 'play' && ready && (
-          <div className="flex flex-col gap-2 flex-1 min-h-0">
+          <div className="flex flex-col gap-1.5 flex-1 min-h-0">
             {/* ステータスバー */}
             <div className="flex items-center justify-between text-sm shrink-0">
               <div className="flex items-center gap-2">
@@ -200,13 +200,13 @@ export default function HyakumasuGame({ lang, setLang, onExit }) {
             </div>
 
             {/* 大きな出題カード */}
-            <div className="bg-white border-2 border-orange-200 rounded-2xl py-2.5 text-center shadow-sm shrink-0">
-              <div className="text-4xl font-black text-slate-700 tracking-wide">
+            <div className="bg-white border-2 border-orange-200 rounded-2xl py-2 text-center shadow-sm shrink-0">
+              <div className="text-3xl font-black text-slate-700 tracking-wide leading-tight">
                 {curA} <span className="text-orange-400">{sym}</span> {curB}
                 <span className="text-slate-300"> = </span>
                 <span className="text-amber-500">{input || '?'}</span>
               </div>
-              <div className="text-[11px] text-slate-400">{index + 1} / {CELLS} マス目</div>
+              <div className="text-[10px] text-slate-400">{index + 1} / {CELLS} マス目</div>
             </div>
 
             {/* 百マス盤面（残りの縦スペースに収まるよう自動で縮小） */}
@@ -214,9 +214,9 @@ export default function HyakumasuGame({ lang, setLang, onExit }) {
               <HyakumasuGrid rowH={rowH} colH={colH} answers={answers} index={index} sym={sym} />
             </div>
 
-            {/* テンキー */}
+            {/* テンキー（スリム表示で画面に収める） */}
             <div className="shrink-0">
-              <NumPad onDigit={handleDigit} onDelete={() => setInput(s => s.slice(0, -1))} onClear={() => setInput('')} />
+              <NumPad compact onDigit={handleDigit} onDelete={() => setInput(s => s.slice(0, -1))} onClear={() => setInput('')} />
             </div>
           </div>
         )}
